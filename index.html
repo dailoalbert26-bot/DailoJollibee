@@ -456,7 +456,7 @@
   <!-- SCRIPT LOGIC -->
   <script>
     // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-    const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec";
 
     let currentUser = null;
     let inventoryData = [];
@@ -685,7 +685,7 @@
       const qty = document.getElementById('waste-qty').value;
       const reason = document.getElementById('waste-reason').value;
 
-      if(APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec") {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'addWaste', sku, qty, reason, user: currentUser.username })
@@ -724,7 +724,7 @@
         cost: document.getElementById('add-cost').value
       };
 
-      if(APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec") {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify(itemData)
