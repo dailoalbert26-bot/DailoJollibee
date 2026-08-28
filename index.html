@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jollibee Store Inventory System</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
     tailwind.config = {
@@ -35,7 +33,6 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800">
 
-  <!-- LOGIN SCREEN -->
   <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-jbRed px-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-full h-2 bg-jbYellow"></div>
@@ -65,10 +62,8 @@
     </div>
   </div>
 
-  <!-- MAIN APP CONTAINER -->
   <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
 
-    <!-- MOBILE HEADER NAV -->
     <div class="md:hidden bg-jbRed text-white flex items-center justify-between p-4 shadow-md sticky top-0 z-40">
       <div class="flex items-center space-x-2">
         <span class="bg-jbYellow text-jbRed font-bold rounded-full w-8 h-8 flex items-center justify-center">J</span>
@@ -79,7 +74,6 @@
       </button>
     </div>
 
-    <!-- SIDEBAR / NAVIGATION (7 FEATURES) -->
     <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-white border-r border-gray-200 min-h-screen fixed md:sticky top-0 h-screen z-30">
       <div class="p-5 border-b border-gray-100 flex items-center space-x-3 bg-jbRed text-white">
         <div class="bg-jbYellow text-jbRed font-bold rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-md">J</div>
@@ -112,7 +106,7 @@
         </button>
         <button onclick="navigate('waste')" id="nav-waste" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
           <i class="fa-solid fa-trash-can w-5 text-center text-base"></i>
-          <span>6. Waste & Loss Tracker</span>
+          <span>6. Nasira / Natapon Log</span>
         </button>
         <button onclick="navigate('reports')" id="nav-reports" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
           <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-base"></i>
@@ -144,7 +138,6 @@
         </button>
       </div>
 
-      <!-- 1. DASHBOARD -->
       <section id="sec-dashboard" class="space-y-6">
         <h2 class="text-xl font-extrabold text-gray-800">Store Dashboard Overview</h2>
         
@@ -152,28 +145,28 @@
           <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
             <div class="p-3 bg-red-100 text-jbRed rounded-lg"><i class="fa-solid fa-triangle-exclamation text-lg"></i></div>
             <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Low Stock</p>
+              <p class="text-[10px] text-gray-400 font-bold uppercase">Kulang sa Stock</p>
               <h3 id="stat-low-stock" class="text-lg font-extrabold text-gray-800">0 Items</h3>
             </div>
           </div>
           <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
             <div class="p-3 bg-yellow-100 text-yellow-600 rounded-lg"><i class="fa-solid fa-box text-lg"></i></div>
             <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Total SKUs</p>
-              <h3 id="stat-total-sku" class="text-lg font-extrabold text-gray-800">0 SKUs</h3>
+              <p class="text-[10px] text-gray-400 font-bold uppercase">Kabuuang Items</p>
+              <h3 id="stat-total-sku" class="text-lg font-extrabold text-gray-800">0 Items</h3>
             </div>
           </div>
           <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
             <div class="p-3 bg-green-100 text-green-600 rounded-lg"><i class="fa-solid fa-peso-sign text-lg"></i></div>
             <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Est. Stock Value</p>
+              <p class="text-[10px] text-gray-400 font-bold uppercase">Halaga ng Stocks</p>
               <h3 id="stat-stock-value" class="text-lg font-extrabold text-gray-800">₱0.00</h3>
             </div>
           </div>
           <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
             <div class="p-3 bg-blue-100 text-blue-600 rounded-lg"><i class="fa-solid fa-dumpster text-lg"></i></div>
             <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Logged Waste</p>
+              <p class="text-[10px] text-gray-400 font-bold uppercase">Nasira / Natapon</p>
               <h3 id="stat-waste-count" class="text-lg font-extrabold text-gray-800">0 Logs</h3>
             </div>
           </div>
@@ -202,7 +195,6 @@
         </div>
       </section>
 
-      <!-- 2. RAW INGREDIENTS -->
       <section id="sec-ingredients" class="hidden space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-extrabold text-gray-800">Raw Ingredients Directory</h2>
@@ -214,7 +206,7 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
               <tr>
-                <th class="p-3">SKU</th>
+                <th class="p-3">Item Code</th>
                 <th class="p-3">Item Description</th>
                 <th class="p-3">Unit</th>
                 <th class="p-3">Current Stock</th>
@@ -229,7 +221,6 @@
         </div>
       </section>
 
-      <!-- 3. PACKAGING & SUPPLIES -->
       <section id="sec-packaging" class="hidden space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-extrabold text-gray-800">Packaging & Non-Food Supplies</h2>
@@ -241,7 +232,7 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
               <tr>
-                <th class="p-3">SKU</th>
+                <th class="p-3">Item Code</th>
                 <th class="p-3">Packaging Description</th>
                 <th class="p-3">Unit</th>
                 <th class="p-3">Current Stock</th>
@@ -256,7 +247,6 @@
         </div>
       </section>
 
-      <!-- 4. STOCK MOVEMENT LOG -->
       <section id="sec-stock-movement" class="hidden space-y-4">
         <h2 class="text-xl font-extrabold text-gray-800">Stock Movement Log (IN / OUT)</h2>
         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -290,7 +280,7 @@
             <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
               <tr>
                 <th class="p-3">Timestamp</th>
-                <th class="p-3">SKU</th>
+                <th class="p-3">Item Code</th>
                 <th class="p-3">Item Description</th>
                 <th class="p-3">Type</th>
                 <th class="p-3">Quantity</th>
@@ -304,7 +294,6 @@
         </div>
       </section>
 
-      <!-- 5. SUPPLIERS & ORDERS -->
       <section id="sec-suppliers" class="hidden space-y-4">
         <h2 class="text-xl font-extrabold text-gray-800">Central Commissary & Vendors</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,9 +325,8 @@
         </div>
       </section>
 
-      <!-- 6. WASTE & LOSS TRACKER -->
       <section id="sec-waste" class="hidden space-y-4">
-        <h2 class="text-xl font-extrabold text-gray-800">Waste & Shrinkage Tracker</h2>
+        <h2 class="text-xl font-extrabold text-gray-800">Nasira / Natapon Tracker</h2>
         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
           <form onsubmit="handleWasteSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
@@ -372,7 +360,7 @@
             <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
               <tr>
                 <th class="p-3">Timestamp</th>
-                <th class="p-3">SKU</th>
+                <th class="p-3">Item Code</th>
                 <th class="p-3">Item Description</th>
                 <th class="p-3">Quantity</th>
                 <th class="p-3">Reason</th>
@@ -386,7 +374,6 @@
         </div>
       </section>
 
-      <!-- 7. REPORTS & ANALYTICS -->
       <section id="sec-reports" class="hidden space-y-4">
         <h2 class="text-xl font-extrabold text-gray-800">Reports & Export Options</h2>
         <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
@@ -408,18 +395,17 @@
     </main>
   </div>
 
-  <!-- ADD ITEM MODAL -->
   <div id="modal-add-item" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="modal-title" class="font-bold text-sm text-gray-800">Add New Inventory SKU</h3>
+        <h3 id="modal-title" class="font-bold text-sm text-gray-800">Add New Inventory Item</h3>
         <button onclick="closeAddItemModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleAddItemSubmit(event)" class="space-y-3">
         <input type="hidden" id="add-category">
         <div>
-          <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">SKU Code</label>
-          <input type="text" id="add-sku" required placeholder="e.g. RAW-CJ-005" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
+          <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Item Code</label>
+          <input type="text" id="add-sku" required placeholder="e.g. ITEM-005" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Item Description</label>
@@ -447,13 +433,12 @@
         </div>
         <div class="pt-2 flex justify-end space-x-2">
           <button type="button" onclick="closeAddItemModal()" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold">Cancel</button>
-          <button type="submit" id="add-item-btn" class="px-4 py-2 bg-jbRed text-white rounded-lg text-xs font-bold hover:bg-jbDarkRed">Save SKU</button>
+          <button type="submit" id="add-item-btn" class="px-4 py-2 bg-jbRed text-white rounded-lg text-xs font-bold hover:bg-jbDarkRed">Save Item</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- SCRIPT LOGIC -->
   <script>
     // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec";
@@ -496,7 +481,7 @@
       btn.innerText = "AUTHENTICATING...";
       btn.disabled = true;
 
-      if(APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      if(APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
         if((user === 'manager' && pass === 'admin123') || (user === 'crew1' && pass === 'staff123')) {
           currentUser = {
             username: user,
@@ -550,7 +535,7 @@
     }
 
     async function fetchSheetData() {
-      if(APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      if(APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
         inventoryData = [
           { sku: 'RAW-CJ-001', name: 'Chickenjoy Marinated Cuts (20pcs)', category: 'Raw Ingredients', unit: 'Bags', qty: 15, min: 30, cost: 450.00 },
           { sku: 'RAW-YB-002', name: 'Yumburger Beef Patties', category: 'Raw Ingredients', unit: 'Boxes', qty: 80, min: 40, cost: 600.00 },
@@ -583,7 +568,7 @@
     function renderUI() {
       const lowStockItems = inventoryData.filter(i => Number(i.qty) <= Number(i.min));
       document.getElementById('stat-low-stock').innerText = `${lowStockItems.length} Items`;
-      document.getElementById('stat-total-sku').innerText = `${inventoryData.length} SKUs`;
+      document.getElementById('stat-total-sku').innerText = `${inventoryData.length} Items`;
       
       const totalVal = inventoryData.reduce((acc, i) => acc + (Number(i.qty) * Number(i.cost)), 0);
       document.getElementById('stat-stock-value').innerText = `₱${totalVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
@@ -663,7 +648,7 @@
       const type = document.getElementById('move-type').value;
       const qty = document.getElementById('move-qty').value;
 
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbxgah-yLVnX868DypcRdqf1T0O0JZungTRpvGpMQnYextyN3Fn_NJOzCFnSVC4iqssLGw/exec") {
+      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'addMovement', sku, type, qty, user: currentUser.username })
@@ -685,7 +670,7 @@
       const qty = document.getElementById('waste-qty').value;
       const reason = document.getElementById('waste-reason').value;
 
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec") {
+      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'addWaste', sku, qty, reason, user: currentUser.username })
@@ -700,7 +685,7 @@
 
     function openAddItemModal(category) {
       document.getElementById('add-category').value = category;
-      document.getElementById('modal-title').innerText = `Add New ${category} SKU`;
+      document.getElementById('modal-title').innerText = `Add New ${category} Item`;
       document.getElementById('modal-add-item').classList.remove('hidden');
     }
 
@@ -724,14 +709,14 @@
         cost: document.getElementById('add-cost').value
       };
 
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec") {
+      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify(itemData)
         });
         await fetchSheetData();
       } else {
-        alert("Local mode: SKU Added.");
+        alert("Local mode: Item Added.");
       }
 
       closeAddItemModal();
@@ -740,7 +725,7 @@
     }
 
     function downloadCSVReport() {
-      let csv = 'SKU,Name,Category,Unit,Qty,Min,Cost\n';
+      let csv = 'Item Code,Name,Category,Unit,Qty,Min,Cost\n';
       inventoryData.forEach(i => {
         csv += `"${i.sku}","${i.name}","${i.category}","${i.unit}",${i.qty},${i.min},${i.cost}\n`;
       });
