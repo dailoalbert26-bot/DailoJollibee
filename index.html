@@ -425,7 +425,7 @@
         <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchUsr" placeholder="Search users…" oninput="filterUsrs()" /></div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Status</th><th>Lock Status</th><th></th>Actions</th></tr></thead>
             <tbody id="usrTbody"></tbody>
           </table>
         </div>
@@ -577,7 +577,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyutSr8XWbwlRzpRaGlExAtxQSIPKf0Jx_frXVKmgcT4zn0hzKInZbe6AzBB2SGuuTmPw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwO8sSGVWO8bm3qnpwAMTC2jownTCrQzemeVx45m8j9vdJjj1O5yC7GwvLDREzg_Qvywg/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1048,12 +1048,22 @@ function renderUsrs(list){
         <td>${i+1}</td><td>${u.name}</td><td>${u.username}</td>
         <td><span class="badge ${u.role==='Admin'?'b-purple':'b-info'}">${u.role}</span></td>
         <td><span class="badge ${u.status==='Active'?'b-success':'b-gray'}">${u.status||'Active'}</span></td>
+        <td><span class="badge ${u.locked==='true'||u.locked===true?'b-danger':'b-success'}">${u.locked==='true'||u.locked===true?'🔒 Locked':'✅ Active'}</span></td>
         <td>${u.username!==SESSION.username
-          ?`<button class="btn btn-outline btn-sm" onclick="openUsrModal('${u.rowId}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="confirmDel('user','${u.rowId}','${esc(u.name)}')"><i class="fas fa-trash"></i></button>`
+          ?`<button class="btn btn-outline btn-sm" onclick="openUsrModal('${u.rowId}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDel('user','${u.rowId}','${esc(u.name)}')"><i class="fas fa-trash"></i></button>
+            ${u.locked==='true'||u.locked===true?`<button class="btn btn-warning btn-sm" onclick="unlockUser('${u.rowId}','${esc(u.name)}')"><i class="fas fa-unlock"></i></button>`:''}`
           :'<span style="font-size:11px;color:var(--gray-2)">You</span>'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>No users.</p></div></td></tr>';
+    : '<tr><td colspan="7"><div class="empty"><i class="fas fa-users"></i><p>No users.</p></div></td></tr>';
 }
+async function unlockUser(rowId, name){
+  if(!confirm(`Unlock account of ${name}?`)) return;
+  const r = await api('unlockUser',{rowId});
+  if(r.success){ toast('🔓 Account unlocked!'); loadUsers(); }
+  else toast('❌ '+(r.error||'Error'));
+}
+
 function openUsrModal(rowId=null){
   if(SESSION.role!=='Admin'){ toast('Admins only.'); return; }
   if(rowId){ const u=USERS.find(x=>x.rowId===rowId); if(!u) return; $('mUsrTitle').textContent='Edit User'; $('uId').value=rowId; $('uName').value=u.name; $('uUser').value=u.username; $('uRole').value=u.role; $('uPass').value=''; $('uStat').value=u.status||'Active'; }
