@@ -3,415 +3,372 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jollibee Inventory System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <title>Jollibee Inventory Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .sidebar { min-height: 100vh; background-color: #212529; color: white; }
-    .sidebar .nav-link { color: #adb5bd; margin-bottom: 5px; cursor: pointer; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: #d32f2f; border-radius: 5px; }
-    .card-summary { border-left: 5px solid #d32f2f; }
-    .style-form { max-width: 600px; }
+    .jollibee-red { background-color: #e31837; }
+    .jollibee-bg { background-color: #f8f9fa; }
   </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans antialiased min-h-screen flex flex-col md:flex-row">
 
-  <!-- LOGIN SECTION -->
-  <div id="login-section" class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
-      <div class="text-center mb-3">
-        <h3 class="fw-bold text-danger">Jollibee</h3>
-        <p class="text-muted">Inventory System Login</p>
+  <div id="loginSection" class="fixed inset-0 z-50 flex items-center justify-center bg-red-700 p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+      <div class="w-20 h-20 bg-red-600 text-white font-bold text-3xl flex items-center justify-center rounded-full mx-auto mb-4 border-4 border-yellow-400">J</div>
+      <h2 class="text-2xl font-black text-gray-800 mb-1">Jollibee Inventory</h2>
+      <p class="text-xs text-gray-500 mb-6">Store Management Portal</p>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <input type="text" id="loginUser" placeholder="Username" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+        <div>
+          <input type="password" id="loginPass" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg shadow-md transition">LOGIN</button>
+      </form>
+      <p id="loginError" class="text-xs text-red-600 mt-3 hidden">Invalid Username or Password!</p>
+    </div>
+  </div>
+
+  <div id="appSection" class="hidden w-full flex flex-col md:flex-row min-h-screen">
+    
+    <aside class="w-full md:w-64 jollibee-red text-white flex-shrink-0">
+      <div class="p-4 flex items-center justify-between border-b border-red-500">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center font-bold text-red-700">J</div>
+          <span class="font-black text-lg">Inventory System</span>
+        </div>
       </div>
-      <form onsubmit="handleLogin(event)">
-        <div class="mb-3">
-          <label class="form-label">Username</label>
-          <input type="text" id="username" class="form-control" required>
+      
+      <nav class="p-4 space-y-1 text-sm font-medium">
+        <button onclick="switchTab('dashboardTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-chart-pie w-5"></i> 1. Dashboard Overview
+        </button>
+        <button onclick="switchTab('stockTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-boxes-stacked w-5"></i> 2. Stock Items
+        </button>
+        <button onclick="switchTab('categoryTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-list w-5"></i> 3. Menu Categories
+        </button>
+        <button onclick="switchTab('reorderTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-cart-flatbed w-5"></i> 4. Purchase Reorder
+        </button>
+        <button onclick="switchTab('suppliersTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-truck-field w-5"></i> 5. Suppliers Registry
+        </button>
+        <button onclick="switchTab('logsTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-clock-rotate-left w-5"></i> 6. Audit & Security Logs
+        </button>
+        <button onclick="switchTab('usersTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
+          <i class="fa-solid fa-users-gear w-5"></i> 7. User Control
+        </button>
+      </nav>
+
+      <div class="p-4 border-t border-red-500 mt-auto">
+        <div class="text-xs mb-2">User: <span id="displayUser" class="font-bold">Admin</span></div>
+        <button onclick="logout()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-red-900 font-bold py-1.5 rounded-lg text-xs transition">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+
+      <section id="dashboardTab" class="tab-content">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Dashboard Overview</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <p class="text-xs text-gray-500 font-semibold uppercase">Total Products</p>
+            <p id="dashTotalItems" class="text-3xl font-black text-gray-800">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <p class="text-xs text-gray-500 font-semibold uppercase">Low Stock Alerts</p>
+            <p id="dashLowStock" class="text-3xl font-black text-red-600">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <p class="text-xs text-gray-500 font-semibold uppercase">Pending Reorders</p>
+            <p id="dashOrders" class="text-3xl font-black text-yellow-600">0</p>
+          </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" id="password" class="form-control" required>
+      </section>
+
+      <section id="stockTab" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Stock Inventory</h2>
+          <button onclick="toggleModal('addProductModal')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-bold">
+            + Add Product
+          </button>
         </div>
-        <button type="submit" id="loginBtn" class="btn btn-danger w-100 fw-bold">Login</button>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-100 border-b">
+              <tr>
+                <th class="p-3">ID</th>
+                <th class="p-3">Name</th>
+                <th class="p-3">Category</th>
+                <th class="p-3">Qty</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="categoryTab" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Menu Categories</h2>
+        <div id="categoryContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+      </section>
+
+      <section id="reorderTab" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Purchase Orders</h2>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-100 border-b">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">Item Name</th>
+                <th class="p-3">Qty</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="reorderTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="suppliersTab" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Suppliers Registry</h2>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-100 border-b">
+              <tr>
+                <th class="p-3">Supplier ID</th>
+                <th class="p-3">Company Name</th>
+                <th class="p-3">Contact Person</th>
+                <th class="p-3">Phone</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="logsTab" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Audit & Security Logs</h2>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-100 border-b">
+              <tr>
+                <th class="p-3">Timestamp</th>
+                <th class="p-3">User</th>
+                <th class="p-3">Action</th>
+                <th class="p-3">Details</th>
+              </tr>
+            </thead>
+            <tbody id="logsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="usersTab" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">User Access Management</h2>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-100 border-b">
+              <tr>
+                <th class="p-3">User ID</th>
+                <th class="p-3">Username</th>
+                <th class="p-3">Role</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="addProductModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-bold mb-4">Add New Item</h3>
+      <form id="addProductForm" class="space-y-3">
+        <input type="text" id="pName" placeholder="Item Name (e.g. 1pc Chickenjoy)" required class="w-full border p-2 rounded">
+        <input type="text" id="pCat" placeholder="Category (e.g. Chicken)" required class="w-full border p-2 rounded">
+        <input type="number" id="pQty" placeholder="Quantity" required class="w-full border p-2 rounded">
+        <input type="number" id="pPrice" step="0.01" placeholder="Price (PHP)" required class="w-full border p-2 rounded">
+        <input type="number" id="pMin" placeholder="Minimum Alert Stock Level" required class="w-full border p-2 rounded">
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="toggleModal('addProductModal')" class="px-4 py-2 border rounded">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Save</button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- MAIN SYSTEM APP -->
-  <div id="app-section" class="d-none">
-    <div class="container-fluid">
-      <div class="row">
-        
-        <!-- SIDEBAR NAVIGATION -->
-        <nav class="col-md-3 col-lg-2 d-md-block sidebar p-3">
-          <div class="d-flex align-items-center mb-3 text-white">
-            <span class="fs-4 fw-bold text-danger">Jollibee<span class="text-white fs-6"> Inv</span></span>
-          </div>
-          <hr>
-          <ul class="nav nav-pills flex-column mb-auto">
-            <li><a class="nav-link active" onclick="switchPage('dashboard', this)"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-            <li><a class="nav-link" onclick="switchPage('inventory', this)"><i class="bi bi-box-seam me-2"></i> Stock Inventory</a></li>
-            <li><a class="nav-link" onclick="switchPage('stock-in', this)"><i class="bi bi-arrow-down-right-square me-2"></i> Stock In</a></li>
-            <li><a class="nav-link" onclick="switchPage('stock-out', this)"><i class="bi bi-arrow-up-left-square me-2"></i> Stock Out</a></li>
-            <li><a class="nav-link" onclick="switchPage('spoilage', this)"><i class="bi bi-trash me-2"></i> Spoilage Log</a></li>
-            <li><a class="nav-link" onclick="switchPage('suppliers', this)"><i class="bi bi-truck me-2"></i> Suppliers</a></li>
-            <li><a class="nav-link" onclick="switchPage('reports', this)"><i class="bi bi-file-earmark-bar-graph me-2"></i> Audit Logs</a></li>
-          </ul>
-          <hr>
-          <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
-        </nav>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-          
-          <!-- 1. DASHBOARD -->
-          <div id="page-dashboard" class="page-content">
-            <h2 class="fw-bold mb-4">Store Overview</h2>
-            <div class="row g-3 mb-4">
-              <div class="col-md-4">
-                <div class="card card-summary shadow-sm p-3">
-                  <h6 class="text-muted">Total Active Items</h6>
-                  <h3 class="fw-bold" id="dash-total-items">0</h3>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card card-summary shadow-sm p-3 border-start border-warning border-5">
-                  <h6 class="text-muted">Low Stock Items</h6>
-                  <h3 class="fw-bold text-warning" id="dash-low-stock">0</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. STOCK INVENTORY -->
-          <div id="page-inventory" class="page-content d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h2 class="fw-bold m-0">Stock Inventory</h2>
-              <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                <i class="bi bi-plus-lg me-1"></i> Add New Item
-              </button>
-            </div>
-            <div class="table-responsive bg-white p-3 rounded shadow-sm">
-              <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                  <tr><th>Code</th><th>Item Name</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Min Level</th><th>Status</th></tr>
-                </thead>
-                <tbody id="inventory-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 3. STOCK IN -->
-          <div id="page-stock-in" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Stock In (Receiving)</h2>
-            <div class="card p-4 shadow-sm style-form">
-              <form onsubmit="handleTransaction(event, 'addStockIn')">
-                <div class="mb-3">
-                  <label class="form-label">Select Item Code</label>
-                  <select class="form-select item-dropdown" id="in-code" required></select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Quantity Received</label>
-                  <input type="number" id="in-qty" class="form-control" required min="1">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Supplier / Commissary DR Number</label>
-                  <input type="text" id="in-supplier" class="form-control" placeholder="e.g., Jollibee Main Commissary / DR-1029" required>
-                </div>
-                <button type="submit" class="btn btn-success fw-bold">Submit Stock In</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- 4. STOCK OUT -->
-          <div id="page-stock-out" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Stock Out (Usage)</h2>
-            <div class="card p-4 shadow-sm style-form">
-              <form onsubmit="handleTransaction(event, 'addStockOut')">
-                <div class="mb-3">
-                  <label class="form-label">Select Item Code</label>
-                  <select class="form-select item-dropdown" id="out-code" required></select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Quantity Used</label>
-                  <input type="number" id="out-qty" class="form-control" required min="1">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Reason / Shift</label>
-                  <input type="text" id="out-reason" class="form-control" placeholder="e.g., Kitchen Consumption Morning Shift" required>
-                </div>
-                <button type="submit" class="btn btn-primary fw-bold">Submit Stock Out</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- 5. SPOILAGE LOG -->
-          <div id="page-spoilage" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Spoilage & Waste Management</h2>
-            <div class="card p-4 shadow-sm style-form">
-              <form onsubmit="handleTransaction(event, 'addSpoilage')">
-                <div class="mb-3">
-                  <label class="form-label">Select Item Code</label>
-                  <select class="form-select item-dropdown" id="spoil-code" required></select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Quantity Wasted</label>
-                  <input type="number" id="spoil-qty" class="form-control" required min="1">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Reason for Spoilage</label>
-                  <input type="text" id="spoil-reason" class="form-control" placeholder="e.g., Expired Buns / Damaged Packaging" required>
-                </div>
-                <button type="submit" class="btn btn-danger fw-bold">Log Waste / Spoilage</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- 6. SUPPLIERS -->
-          <div id="page-suppliers" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Suppliers Registry</h2>
-            <div class="table-responsive bg-white p-3 rounded shadow-sm">
-              <table class="table table-hover">
-                <thead class="table-dark">
-                  <tr><th>Supplier ID</th><th>Company Name</th><th>Contact Person</th><th>Phone</th></tr>
-                </thead>
-                <tbody id="supplier-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 7. AUDIT LOGS -->
-          <div id="page-reports" class="page-content d-none">
-            <h2 class="fw-bold mb-3">System Audit Logs</h2>
-            <div class="table-responsive bg-white p-3 rounded shadow-sm">
-              <table class="table table-striped">
-                <thead class="table-dark">
-                  <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr>
-                </thead>
-                <tbody id="audit-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-        </main>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADD NEW ITEM MODAL -->
-  <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title fw-bold">Add New Inventory Item</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form onsubmit="handleAddNewItem(event)">
-          <div class="modal-body">
-            <div class="alert alert-info py-2 small">
-              <i class="bi bi-info-circle me-1"></i> Item Code is automatically generated (e.g., JOL-001).
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Item Name</label>
-              <input type="text" id="add-name" class="form-control" placeholder="e.g., Chickenjoy Premix" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Category</label>
-              <select id="add-category" class="form-select" required>
-                <option value="">-- Select Category --</option>
-                <option value="Dry Goods">Dry Goods</option>
-                <option value="Freezer">Freezer</option>
-                <option value="Beverages">Beverages</option>
-                <option value="Packaging">Packaging</option>
-              </select>
-            </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Initial Quantity</label>
-                <input type="number" id="add-qty" class="form-control" min="0" required>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Unit</label>
-                <input type="text" id="add-unit" class="form-control" placeholder="e.g., Packs / Boxes" required>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Minimum Reorder Level</label>
-              <input type="number" id="add-min" class="form-control" min="1" required>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-danger fw-bold">Save Item</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkQEHL5AhZ3uFl42J7ewQ7iKPT9EHZc9MEQaq8kUijub1oQxLBdeAGcilYQ18hXanlXw/exec"; // PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE
-    let currentUser = "";
+    // Palitan ng sarili mong Google Apps Script Web App URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbzsKFHEP_6GoAu6KGV8V6gIZZ58T5qbZvcuOuoIIa_zLWr9OAoL0eHGzMvvjtqSmtdLRA/exec";
 
-    function handleLogin(e) {
+    let currentUser = null;
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "login", username: user, password: pass })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          currentUser = user;
-          document.getElementById('login-section').classList.add('d-none');
-          document.getElementById('app-section').classList.remove('d-none');
-          loadInventory();
+      const u = document.getElementById('loginUser').value;
+      const p = document.getElementById('loginPass').value;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "login", username: u, password: p })
+        });
+        const data = await res.json();
+
+        if (data.status === "success") {
+          currentUser = data;
+          document.getElementById('displayUser').innerText = `${data.username} (${data.role})`;
+          document.getElementById('loginSection').classList.add('hidden');
+          document.getElementById('appSection').classList.remove('hidden');
+          loadData();
         } else {
-          alert(res.message);
+          document.getElementById('loginError').classList.remove('hidden');
         }
-      });
+      } catch(err) {
+        alert("Connection Error to Google Apps Script Backend.");
+      }
+    });
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('appSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
     }
 
-    function loadInventory() {
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "getInventory" })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          renderInventoryTable(res.data);
-          populateDropdowns(res.data);
-          updateDashboard(res.data);
-        }
-      });
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
     }
 
-    function renderInventoryTable(data) {
-      const tbody = document.getElementById('inventory-table-body');
-      tbody.innerHTML = "";
-      data.forEach(row => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${row[0]}</td>
-            <td>${row[1]}</td>
-            <td>${row[2]}</td>
-            <td>${row[3]}</td>
-            <td>${row[4]}</td>
-            <td>${row[5]}</td>
-            <td><span class="badge ${row[6] === 'Low Stock' ? 'bg-danger' : 'bg-success'}">${row[6]}</span></td>
+    function toggleModal(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+
+    async function loadData() {
+      fetchProducts();
+      fetchSuppliers();
+      fetchOrders();
+      fetchLogs();
+      fetchUsers();
+    }
+
+    async function fetchProducts() {
+      const res = await fetch(`${API_URL}?action=getProducts`);
+      const items = await res.json();
+      
+      let stockHtml = "";
+      let lowStockCount = 0;
+      let categories = {};
+
+      items.forEach(i => {
+        const isLow = Number(i.Quantity) <= Number(i.MinStock);
+        if(isLow) lowStockCount++;
+
+        categories[i.Category] = (categories[i.Category] || 0) + 1;
+
+        stockHtml += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3 font-mono text-xs">${i.ItemID}</td>
+            <td class="p-3 font-bold">${i.ItemName}</td>
+            <td class="p-3">${i.Category}</td>
+            <td class="p-3">${i.Quantity}</td>
+            <td class="p-3">₱${Number(i.Price).toFixed(2)}</td>
+            <td class="p-3">
+              <span class="px-2 py-1 text-xs rounded-full ${isLow ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                ${isLow ? 'Low Stock' : 'Sufficient'}
+              </span>
+            </td>
           </tr>
         `;
       });
+
+      document.getElementById('stockTableBody').innerHTML = stockHtml;
+      document.getElementById('dashTotalItems').innerText = items.length;
+      document.getElementById('dashLowStock').innerText = lowStockCount;
+
+      let catHtml = "";
+      for (let c in categories) {
+        catHtml += `
+          <div class="bg-white p-4 rounded-xl border shadow-sm">
+            <h4 class="font-bold text-lg text-red-600">${c}</h4>
+            <p class="text-sm text-gray-500">${categories[c]} unique item(s)</p>
+          </div>
+        `;
+      }
+      document.getElementById('categoryContainer').innerHTML = catHtml;
     }
 
-    function populateDropdowns(data) {
-      document.querySelectorAll('.item-dropdown').forEach(select => {
-        select.innerHTML = "<option value=''>-- Select Item --</option>";
-        data.forEach(row => {
-          select.innerHTML += `<option value="${row[0]}">${row[0]} - ${row[1]}</option>`;
-        });
+    async function fetchSuppliers() {
+      const res = await fetch(`${API_URL}?action=getSuppliers`);
+      const data = await res.json();
+      let html = "";
+      data.forEach(s => {
+        html += `<tr class="border-b"><td class="p-3">${s.SupplierID}</td><td class="p-3 font-bold">${s.SupplierName}</td><td class="p-3">${s.ContactPerson}</td><td class="p-3">${s.Phone}</td></tr>`;
       });
+      document.getElementById('suppliersTableBody').innerHTML = html;
     }
 
-    function updateDashboard(data) {
-      document.getElementById('dash-total-items').innerText = data.length;
-      const lowStockCount = data.filter(row => row[6] === 'Low Stock').length;
-      document.getElementById('dash-low-stock').innerText = lowStockCount;
+    async function fetchOrders() {
+      const res = await fetch(`${API_URL}?action=getOrders`);
+      const data = await res.json();
+      document.getElementById('dashOrders').innerText = data.length;
+      let html = "";
+      data.forEach(o => {
+        html += `<tr class="border-b"><td class="p-3">${o.OrderID}</td><td class="p-3">${o.ItemName}</td><td class="p-3">${o.QtyOrdered}</td><td class="p-3">${o.OrderDate}</td><td class="p-3"><span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">${o.Status}</span></td></tr>`;
+      });
+      document.getElementById('reorderTableBody').innerHTML = html;
     }
 
-    function handleAddNewItem(e) {
+    async function fetchLogs() {
+      const res = await fetch(`${API_URL}?action=getLogs`);
+      const data = await res.json();
+      let html = "";
+      data.reverse().forEach(l => {
+        html += `<tr class="border-b"><td class="p-3 text-xs text-gray-500">${l.Timestamp}</td><td class="p-3 font-semibold">${l.User}</td><td class="p-3 text-xs font-mono">${l.Action}</td><td class="p-3">${l.Details}</td></tr>`;
+      });
+      document.getElementById('logsTableBody').innerHTML = html;
+    }
+
+    async function fetchUsers() {
+      const res = await fetch(`${API_URL}?action=getUsers`);
+      const data = await res.json();
+      let html = "";
+      data.forEach(u => {
+        html += `<tr class="border-b"><td class="p-3">${u.UserID}</td><td class="p-3 font-bold">${u.Username}</td><td class="p-3">${u.Role}</td></tr>`;
+      });
+      document.getElementById('usersTableBody').innerHTML = html;
+    }
+
+    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
-        action: "addNewItem",
-        data: {
-          name: document.getElementById('add-name').value,
-          category: document.getElementById('add-category').value,
-          qty: document.getElementById('add-qty').value,
-          unit: document.getElementById('add-unit').value,
-          minQty: document.getElementById('add-min').value,
-          user: currentUser
-        }
+        action: "addProduct",
+        itemName: document.getElementById('pName').value,
+        category: document.getElementById('pCat').value,
+        quantity: document.getElementById('pQty').value,
+        price: document.getElementById('pPrice').value,
+        minStock: document.getElementById('pMin').value,
+        user: currentUser ? currentUser.username : "Admin"
       };
 
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        if (res.success) {
-          e.target.reset();
-          const modalInstance = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
-          if (modalInstance) modalInstance.hide();
-          loadInventory();
-        }
-      });
-    }
-
-    function handleTransaction(e, actionType) {
-      e.preventDefault();
-      let payload = { action: actionType, user: currentUser };
-
-      if (actionType === 'addStockIn') {
-        payload.data = { code: document.getElementById('in-code').value, qty: document.getElementById('in-qty').value, supplier: document.getElementById('in-supplier').value, user: currentUser };
-      } else if (actionType === 'addStockOut') {
-        payload.data = { code: document.getElementById('out-code').value, qty: document.getElementById('out-qty').value, reason: document.getElementById('out-reason').value, user: currentUser };
-      } else if (actionType === 'addSpoilage') {
-        payload.data = { code: document.getElementById('spoil-code').value, qty: document.getElementById('spoil-qty').value, reason: document.getElementById('spoil-reason').value, user: currentUser };
-      }
-
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        e.target.reset();
-        loadInventory();
-      });
-    }
-
-    function loadSuppliers() {
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getSuppliers" }) })
-      .then(res => res.json())
-      .then(res => {
-        const tbody = document.getElementById('supplier-table-body');
-        tbody.innerHTML = "";
-        res.data.forEach(row => {
-          tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
-        });
-      });
-    }
-
-    function loadReports() {
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getReports" }) })
-      .then(res => res.json())
-      .then(res => {
-        const tbody = document.getElementById('audit-table-body');
-        tbody.innerHTML = "";
-        res.data.forEach(row => {
-          tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
-        });
-      });
-    }
-
-    function switchPage(pageId, element) {
-      document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
-      document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById('page-' + pageId).classList.remove('d-none');
-      element.classList.add('active');
-
-      if (pageId === 'suppliers') loadSuppliers();
-      if (pageId === 'reports') loadReports();
-    }
-
-    function logout() {
-      document.getElementById('app-section').classList.add('d-none');
-      document.getElementById('login-section').classList.remove('d-none');
-    }
+      await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+      toggleModal('addProductModal');
+      loadData();
+    });
   </script>
 </body>
 </html>
