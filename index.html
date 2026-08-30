@@ -1,374 +1,1026 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jollibee Inventory Management System</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Jollibee Inventory System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .jollibee-red { background-color: #e31837; }
-    .jollibee-bg { background-color: #f8f9fa; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:   #008080;
+      --primary-d: #006666;
+      --primary-l: #e0f5f5;
+      --accent:    #e8334a;
+      --white:     #ffffff;
+      --gray-bg:   #f4f6f8;
+      --gray-1:    #e2e8f0;
+      --gray-2:    #94a3b8;
+      --gray-3:    #64748b;
+      --dark:      #1e293b;
+      --success:   #22c55e;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --info:      #3b82f6;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,0,0,.10);
+      --nav-h:     64px;
+    }
+    html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-bg); color: var(--dark); -webkit-tap-highlight-color: transparent; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--gray-1); border-radius: 99px; }
+
+    /* ── LOGIN ── */
+    #loginPage { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,var(--primary) 0%,var(--primary-d) 100%); padding:16px; }
+    .login-card { background:var(--white); border-radius:20px; padding:40px 28px; width:100%; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,.18); animation:fadeUp .4s ease; }
+    .login-logo { text-align:center; margin-bottom:28px; }
+    .login-logo .bee { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#e8334a,#ffcc00); display:flex; align-items:center; justify-content:center; font-size:38px; margin:0 auto 10px; }
+    .login-logo .brand { font-size:20px; font-weight:700; color:var(--primary); }
+    .login-logo .sub { font-size:12px; color:var(--gray-2); margin-top:2px; }
+    .form-group { margin-bottom:14px; }
+    .form-group label { display:block; font-size:12px; font-weight:600; color:var(--gray-3); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:11px 14px; border:1.5px solid var(--gray-1); border-radius:var(--radius); font-size:14px; background:var(--white); color:var(--dark); outline:none; transition:border .2s; resize:none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--primary); }
+    .input-wrap { position:relative; }
+    .input-wrap i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-2); font-size:14px; pointer-events:none; }
+    .input-wrap input { padding-left:38px; }
+    .login-err { color:var(--danger); font-size:13px; margin-top:8px; display:none; align-items:center; gap:6px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:11px 18px; border-radius:var(--radius); font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all .18s; text-decoration:none; white-space:nowrap; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-d); }
+    .btn-danger  { background:var(--danger);  color:#fff; } .btn-danger:hover  { background:#dc2626; }
+    .btn-success { background:var(--success); color:#fff; } .btn-success:hover { background:#16a34a; }
+    .btn-warning { background:var(--warning); color:#fff; } .btn-warning:hover { background:#d97706; }
+    .btn-outline { background:transparent; color:var(--primary); border:1.5px solid var(--primary); }
+    .btn-outline:hover { background:var(--primary-l); }
+    .btn-sm { padding:6px 11px; font-size:12px; }
+    .btn-block { width:100%; }
+
+    /* ── APP SHELL ── */
+    #app { display:none; height:100vh; flex-direction:column; overflow:hidden; }
+
+    /* TOPBAR mobile */
+    .topbar { height:54px; background:var(--primary); color:#fff; display:flex; align-items:center; padding:0 14px; gap:10px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.15); z-index:100; }
+    .topbar .page-title { flex:1; font-size:16px; font-weight:700; }
+    .topbar .t-avatar { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; cursor:pointer; }
+    .topbar .t-logout { background:rgba(255,255,255,.15); border:none; color:#fff; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; }
+
+    /* CONTENT */
+    .content-area { flex:1; overflow-y:auto; padding:14px; padding-bottom:calc(var(--nav-h) + 14px); }
+
+    /* BOTTOM NAV mobile */
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); background:var(--white); display:flex; border-top:1px solid var(--gray-1); z-index:200; box-shadow:0 -2px 12px rgba(0,0,0,.08); }
+    .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; color:var(--gray-2); font-size:9px; font-weight:600; border:none; background:none; padding:4px 2px; transition:color .18s; }
+    .nav-item i { font-size:18px; }
+    .nav-item.active { color:var(--primary); }
+
+    /* SIDEBAR desktop */
+    .sidebar { display:none; }
+    @media(min-width:768px) {
+      #app { flex-direction:row; }
+      .topbar { display:none; }
+      .bottom-nav { display:none; }
+      .sidebar { width:220px; background:var(--primary); flex-shrink:0; display:flex; flex-direction:column; }
+      .sb-logo { padding:22px 18px 14px; text-align:center; border-bottom:1px solid rgba(255,255,255,.15); }
+      .sb-logo .bee2 { font-size:30px; }
+      .sb-logo .brand2 { color:#fff; font-size:15px; font-weight:700; margin-top:6px; line-height:1.3; }
+      .sb-logo .sub2 { color:rgba(255,255,255,.6); font-size:11px; }
+      .sb-nav { flex:1; padding:10px 0; overflow-y:auto; }
+      .sb-item { display:flex; align-items:center; gap:11px; padding:12px 18px; color:rgba(255,255,255,.75); font-size:13px; font-weight:500; cursor:pointer; border:none; background:none; width:100%; transition:all .15s; }
+      .sb-item:hover { background:rgba(255,255,255,.1); color:#fff; }
+      .sb-item.active { background:rgba(255,255,255,.18); color:#fff; font-weight:700; }
+      .sb-item i { width:18px; font-size:15px; }
+      .sb-footer { padding:14px 18px; border-top:1px solid rgba(255,255,255,.15); }
+      .sb-user { color:rgba(255,255,255,.8); font-size:11px; margin-bottom:8px; }
+      .sb-user strong { display:block; font-size:13px; color:#fff; }
+      .content-area { padding-bottom:14px; }
+    }
+
+    /* ── SECTIONS ── */
+    .section { display:none; }
+    .section.active { display:block; animation:fadeUp .22s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    /* PAGE HEADER */
+    .ph { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+    .ph h2 { font-size:18px; font-weight:700; }
+
+    /* SEARCH */
+    .search-wrap { position:relative; margin-bottom:12px; }
+    .search-wrap input { width:100%; padding:10px 14px 10px 36px; border:1.5px solid var(--gray-1); border-radius:var(--radius); font-size:13px; background:#fff; outline:none; transition:border .2s; }
+    .search-wrap input:focus { border-color:var(--primary); }
+    .search-wrap i { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--gray-2); font-size:13px; }
+
+    /* STAT CARDS */
+    .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+    @media(min-width:540px){ .stats-grid{ grid-template-columns:repeat(4,1fr); } }
+    .stat-card { background:#fff; border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); }
+    .stat-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; color:#fff; margin-bottom:8px; }
+    .stat-val { font-size:22px; font-weight:700; }
+    .stat-lbl { font-size:11px; color:var(--gray-2); font-weight:500; margin-top:2px; }
+
+    /* CARD */
+    .card { background:#fff; border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); margin-bottom:14px; }
+    .card-title { font-size:14px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+
+    /* TABLE */
+    .tbl-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead th { text-align:left; padding:9px 11px; background:var(--primary-l); color:var(--primary); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+    tbody tr { border-bottom:1px solid var(--gray-1); }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:#fafbfc; }
+    tbody td { padding:10px 11px; vertical-align:middle; }
+
+    /* BADGE */
+    .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:99px; font-size:11px; font-weight:700; }
+    .b-success { background:#dcfce7; color:#15803d; }
+    .b-danger  { background:#fee2e2; color:#dc2626; }
+    .b-warning { background:#fef9c3; color:#b45309; }
+    .b-info    { background:#dbeafe; color:#1d4ed8; }
+    .b-gray    { background:var(--gray-1); color:var(--gray-3); }
+    .b-purple  { background:#ede9fe; color:#6d28d9; }
+
+    /* PRODUCT GRID */
+    .prod-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:11px; }
+    @media(min-width:480px){ .prod-grid{ grid-template-columns:repeat(3,1fr); } }
+    @media(min-width:768px){ .prod-grid{ grid-template-columns:repeat(4,1fr); } }
+    .prod-card { background:#fff; border-radius:var(--radius); padding:12px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:6px; }
+    .p-img { width:100%; aspect-ratio:1; border-radius:9px; background:var(--primary-l); display:flex; align-items:center; justify-content:center; font-size:34px; }
+    .p-name { font-size:12px; font-weight:700; line-height:1.3; }
+    .p-cat  { font-size:10px; color:var(--gray-2); }
+    .p-price{ font-size:13px; font-weight:700; color:var(--primary); }
+    .p-stock{ font-size:11px; font-weight:600; }
+    .p-acts { display:flex; gap:5px; margin-top:2px; }
+    .low { color:var(--danger); } .ok { color:var(--success); }
+
+    /* CAT GRID */
+    .cat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:11px; }
+    @media(min-width:480px){ .cat-grid{ grid-template-columns:repeat(3,1fr); } }
+    .cat-card { background:#fff; border-radius:var(--radius); padding:16px 12px; box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; gap:7px; position:relative; }
+    .cat-actions { position:absolute; top:8px; right:8px; display:flex; gap:4px; }
+    .cat-icon { font-size:32px; }
+    .cat-name { font-size:13px; font-weight:700; text-align:center; }
+    .cat-count{ font-size:11px; color:var(--gray-2); }
+
+    /* ORDER ITEM */
+    .ord-item { display:flex; align-items:center; gap:11px; padding:11px 0; border-bottom:1px solid var(--gray-1); }
+    .ord-item:last-child{ border-bottom:none; }
+    .ord-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+    .ord-info { flex:1; min-width:0; }
+    .ord-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ord-meta { font-size:11px; color:var(--gray-2); margin-top:2px; }
+    .ord-right{ text-align:right; flex-shrink:0; }
+    .ord-amt  { font-size:13px; font-weight:700; }
+    .ord-total{ font-size:11px; color:var(--gray-2); }
+
+    /* MODAL */
+    .modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; display:none; align-items:flex-end; justify-content:center; }
+    .modal-ov.open { display:flex; animation:fadeIn .18s ease; }
+    .modal { background:#fff; border-radius:20px 20px 0 0; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; padding:22px 18px 30px; animation:slideUp .28s ease; }
+    @keyframes slideUp { from{transform:translateY(40px)} to{transform:translateY(0)} }
+    @media(min-width:540px){ .modal-ov{ align-items:center; padding:16px; } .modal{ border-radius:20px; } }
+    .modal-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .modal-hdr h3 { font-size:16px; font-weight:700; }
+    .modal-close { background:var(--gray-1); border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
+    .modal-ftr { display:flex; gap:9px; margin-top:18px; }
+    .modal-ftr .btn { flex:1; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+
+    /* CHIP */
+    .chip { display:inline-flex; align-items:center; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; background:var(--primary-l); color:var(--primary); }
+
+    /* ALERT */
+    .alert { padding:11px 13px; border-radius:var(--radius); margin-bottom:11px; font-size:13px; display:flex; align-items:flex-start; gap:9px; }
+    .alert-warn { background:#fef9c3; color:#92400e; border-left:4px solid var(--warning); }
+    .alert-danger{ background:#fee2e2; color:#7f1d1d; border-left:4px solid var(--danger); }
+
+    /* CHART */
+    .chart-box { position:relative; height:200px; }
+
+    /* TOAST */
+    #toast { position:fixed; bottom:calc(var(--nav-h) + 10px); left:50%; transform:translateX(-50%); background:var(--dark); color:#fff; padding:9px 20px; border-radius:99px; font-size:13px; font-weight:600; z-index:9999; opacity:0; transition:opacity .28s; pointer-events:none; white-space:nowrap; max-width:90vw; }
+    #toast.show { opacity:1; }
+    @media(min-width:768px){ #toast{ bottom:18px; } }
+
+    /* SPINNER */
+    .spin { display:inline-block; width:16px; height:16px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:rot .65s linear infinite; }
+    @keyframes rot{ to{transform:rotate(360deg)} }
+
+    /* VIEW TOGGLE */
+    .vtgl { display:flex; gap:5px; }
+    .vtgl button { background:var(--gray-1); border:none; padding:7px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--gray-3); }
+    .vtgl button.active { background:var(--primary); color:#fff; }
+
+    /* MISC */
+    .flex-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .empty { text-align:center; padding:36px 16px; color:var(--gray-2); }
+    .empty i { font-size:44px; opacity:.35; display:block; margin-bottom:10px; }
+    .empty p { font-size:13px; }
   </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+<body>
 
-  <div id="loginSection" class="fixed inset-0 z-50 flex items-center justify-center bg-red-700 p-4">
-    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-      <div class="w-20 h-20 bg-red-600 text-white font-bold text-3xl flex items-center justify-center rounded-full mx-auto mb-4 border-4 border-yellow-400">J</div>
-      <h2 class="text-2xl font-black text-gray-800 mb-1">Jollibee Inventory</h2>
-      <p class="text-xs text-gray-500 mb-6">Store Management Portal</p>
-      
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <input type="text" id="loginUser" placeholder="Username" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-        </div>
-        <div>
-          <input type="password" id="loginPass" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-        </div>
-        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg shadow-md transition">LOGIN</button>
-      </form>
-      <p id="loginError" class="text-xs text-red-600 mt-3 hidden">Invalid Username or Password!</p>
+<!-- ═══════════════════════════════════════════════════
+     LOGIN PAGE
+════════════════════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="bee">🐝</div>
+      <div class="brand">Jollibee Inventory System</div>
+      <div class="sub">Store Management Portal</div>
     </div>
+    <div class="form-group">
+      <label>Username</label>
+      <div class="input-wrap">
+        <i class="fas fa-user"></i>
+        <input type="text" id="lgUser" placeholder="Enter your username" autocomplete="username" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="lgPass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+    </div>
+    <div class="login-err" id="lgErr"><i class="fas fa-exclamation-circle"></i><span id="lgErrMsg">Invalid credentials.</span></div>
+    <button class="btn btn-primary btn-block" id="lgBtn" onclick="doLogin()" style="margin-top:14px;">
+      <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+    <p style="text-align:center;font-size:11px;color:var(--gray-2);margin-top:14px;">Jollibee Inventory System · Secure Login</p>
   </div>
+</div>
 
-  <div id="appSection" class="hidden w-full flex flex-col md:flex-row min-h-screen">
-    
-    <aside class="w-full md:w-64 jollibee-red text-white flex-shrink-0">
-      <div class="p-4 flex items-center justify-between border-b border-red-500">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center font-bold text-red-700">J</div>
-          <span class="font-black text-lg">Inventory System</span>
+<!-- ═══════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR (desktop only) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="bee2">🐝</div>
+      <div class="brand2">Jollibee<br>Inventory System</div>
+      <div class="sub2">Store Management</div>
+    </div>
+    <nav class="sb-nav" id="sbNav">
+      <button class="sb-item active" data-sec="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>
+      <button class="sb-item" data-sec="products"><i class="fas fa-box-open"></i> Products</button>
+      <button class="sb-item" data-sec="categories"><i class="fas fa-tags"></i> Categories</button>
+      <button class="sb-item" data-sec="orders"><i class="fas fa-shopping-cart"></i> Orders</button>
+      <button class="sb-item" data-sec="suppliers"><i class="fas fa-truck"></i> Suppliers</button>
+      <button class="sb-item" data-sec="reports"><i class="fas fa-chart-bar"></i> Reports</button>
+      <button class="sb-item" data-sec="users"><i class="fas fa-users"></i> Users</button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user"><strong id="sbName">–</strong><span id="sbRole">–</span></div>
+      <button class="btn btn-sm btn-block" onclick="doLogout()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
+
+    <!-- TOPBAR (mobile only) -->
+    <div class="topbar">
+      <div class="page-title" id="tbTitle">Dashboard</div>
+      <div class="t-avatar" id="tbAvatar">?</div>
+      <button class="t-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="content-area">
+
+      <!-- ─── DASHBOARD ─── -->
+      <section id="sec-dashboard" class="section active">
+        <div class="ph">
+          <h2>📊 Dashboard</h2>
+          <button class="btn btn-primary btn-sm" onclick="loadDashboard()"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
-      </div>
-      
-      <nav class="p-4 space-y-1 text-sm font-medium">
-        <button onclick="switchTab('dashboardTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-chart-pie w-5"></i> 1. Dashboard Overview
-        </button>
-        <button onclick="switchTab('stockTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-boxes-stacked w-5"></i> 2. Stock Items
-        </button>
-        <button onclick="switchTab('categoryTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-list w-5"></i> 3. Menu Categories
-        </button>
-        <button onclick="switchTab('reorderTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-cart-flatbed w-5"></i> 4. Purchase Reorder
-        </button>
-        <button onclick="switchTab('suppliersTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-truck-field w-5"></i> 5. Suppliers Registry
-        </button>
-        <button onclick="switchTab('logsTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-clock-rotate-left w-5"></i> 6. Audit & Security Logs
-        </button>
-        <button onclick="switchTab('usersTab')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-800 transition">
-          <i class="fa-solid fa-users-gear w-5"></i> 7. User Control
-        </button>
-      </nav>
+        <div id="dashAlerts"></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:var(--primary)"><i class="fas fa-box-open"></i></div><div class="stat-val" id="stProd">–</div><div class="stat-lbl">Total Products</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--accent)"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-val" id="stLow">–</div><div class="stat-lbl">Low Stock</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--success)"><i class="fas fa-shopping-cart"></i></div><div class="stat-val" id="stOrd">–</div><div class="stat-lbl">Total Orders</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--info)"><i class="fas fa-peso-sign"></i></div><div class="stat-val" id="stRev">–</div><div class="stat-lbl">Total Revenue</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-line" style="color:var(--primary)"></i> Sales – Last 7 Days</div>
+          <div class="chart-box"><canvas id="chartSales"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-trophy" style="color:var(--warning)"></i> Top 5 Products</div>
+          <div id="dashTop"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-history" style="color:var(--info)"></i> Recent Orders</div>
+          <div id="dashRecent"></div>
+        </div>
+      </section>
 
-      <div class="p-4 border-t border-red-500 mt-auto">
-        <div class="text-xs mb-2">User: <span id="displayUser" class="font-bold">Admin</span></div>
-        <button onclick="logout()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-red-900 font-bold py-1.5 rounded-lg text-xs transition">
-          <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </button>
-      </div>
-    </aside>
-
-    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-
-      <section id="dashboardTab" class="tab-content">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Dashboard Overview</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-            <p class="text-xs text-gray-500 font-semibold uppercase">Total Products</p>
-            <p id="dashTotalItems" class="text-3xl font-black text-gray-800">0</p>
+      <!-- ─── PRODUCTS ─── -->
+      <section id="sec-products" class="section">
+        <div class="ph">
+          <h2>📦 Products</h2>
+          <button class="btn btn-primary btn-sm" onclick="openProdModal()"><i class="fas fa-plus"></i> Add Product</button>
+        </div>
+        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchProd" placeholder="Search products…" oninput="filterProds()" /></div>
+        <div class="flex-row" style="margin-bottom:11px;">
+          <select id="filtProdCat" onchange="filterProds()" style="padding:8px 11px;border:1.5px solid var(--gray-1);border-radius:var(--radius);font-size:12px;background:#fff;">
+            <option value="">All Categories</option>
+          </select>
+          <div class="vtgl">
+            <button id="vGrid" class="active" onclick="setProdView('grid')"><i class="fas fa-th"></i></button>
+            <button id="vList" onclick="setProdView('list')"><i class="fas fa-list"></i></button>
           </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-            <p class="text-xs text-gray-500 font-semibold uppercase">Low Stock Alerts</p>
-            <p id="dashLowStock" class="text-3xl font-black text-red-600">0</p>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-            <p class="text-xs text-gray-500 font-semibold uppercase">Pending Reorders</p>
-            <p id="dashOrders" class="text-3xl font-black text-yellow-600">0</p>
-          </div>
         </div>
-      </section>
-
-      <section id="stockTab" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-gray-800">Stock Inventory</h2>
-          <button onclick="toggleModal('addProductModal')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-bold">
-            + Add Product
-          </button>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-100 border-b">
-              <tr>
-                <th class="p-3">ID</th>
-                <th class="p-3">Name</th>
-                <th class="p-3">Category</th>
-                <th class="p-3">Qty</th>
-                <th class="p-3">Price</th>
-                <th class="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody id="stockTableBody"></tbody>
+        <div id="prodGrid" class="prod-grid"></div>
+        <div id="prodTable" style="display:none;" class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="prodTbody"></tbody>
           </table>
         </div>
       </section>
 
-      <section id="categoryTab" class="tab-content hidden">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Menu Categories</h2>
-        <div id="categoryContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+      <!-- ─── CATEGORIES ─── -->
+      <section id="sec-categories" class="section">
+        <div class="ph">
+          <h2>🗂️ Categories</h2>
+          <button class="btn btn-primary btn-sm" onclick="openCatModal()"><i class="fas fa-plus"></i> Add Category</button>
+        </div>
+        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchCat" placeholder="Search categories…" oninput="filterCats()" /></div>
+        <div id="catGrid" class="cat-grid"></div>
       </section>
 
-      <section id="reorderTab" class="tab-content hidden">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Purchase Orders</h2>
-        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-100 border-b">
-              <tr>
-                <th class="p-3">Order ID</th>
-                <th class="p-3">Item Name</th>
-                <th class="p-3">Qty</th>
-                <th class="p-3">Date</th>
-                <th class="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody id="reorderTableBody"></tbody>
+      <!-- ─── ORDERS ─── -->
+      <section id="sec-orders" class="section">
+        <div class="ph">
+          <h2>🛒 Orders</h2>
+          <button class="btn btn-primary btn-sm" onclick="openOrdModal()"><i class="fas fa-plus"></i> New Transaction</button>
+        </div>
+        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchOrd" placeholder="Search orders…" oninput="filterOrds()" /></div>
+        <div class="flex-row" style="margin-bottom:11px;">
+          <select id="filtOrdType" onchange="filterOrds()" style="padding:8px 11px;border:1.5px solid var(--gray-1);border-radius:var(--radius);font-size:12px;background:#fff;">
+            <option value="">All Types</option>
+            <option value="Sell">Sell</option>
+            <option value="Restock">Restock</option>
+          </select>
+        </div>
+        <div class="card"><div id="ordList"></div></div>
+      </section>
+
+      <!-- ─── SUPPLIERS ─── -->
+      <section id="sec-suppliers" class="section">
+        <div class="ph">
+          <h2>🚚 Suppliers</h2>
+          <button class="btn btn-primary btn-sm" onclick="openSupModal()"><i class="fas fa-plus"></i> Add Supplier</button>
+        </div>
+        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchSup" placeholder="Search suppliers…" oninput="filterSups()" /></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Supplier</th><th>Contact</th><th>Email</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="supTbody"></tbody>
           </table>
         </div>
       </section>
 
-      <section id="suppliersTab" class="tab-content hidden">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Suppliers Registry</h2>
-        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-100 border-b">
-              <tr>
-                <th class="p-3">Supplier ID</th>
-                <th class="p-3">Company Name</th>
-                <th class="p-3">Contact Person</th>
-                <th class="p-3">Phone</th>
-              </tr>
-            </thead>
-            <tbody id="suppliersTableBody"></tbody>
-          </table>
+      <!-- ─── REPORTS ─── -->
+      <section id="sec-reports" class="section">
+        <div class="ph">
+          <h2>📈 Reports</h2>
+          <button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:var(--primary)"><i class="fas fa-peso-sign"></i></div><div class="stat-val" id="rpRev">–</div><div class="stat-lbl">Total Revenue</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--success)"><i class="fas fa-shopping-bag"></i></div><div class="stat-val" id="rpOrd">–</div><div class="stat-lbl">Total Orders</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--warning)"><i class="fas fa-box"></i></div><div class="stat-val" id="rpProd">–</div><div class="stat-lbl">Products</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--danger)"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-val" id="rpLow">–</div><div class="stat-lbl">Low Stock</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--primary)"></i> Revenue by Category</div>
+          <div class="chart-box"><canvas id="chartCat"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-pie" style="color:var(--accent)"></i> Stock Distribution</div>
+          <div class="chart-box"><canvas id="chartStock"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-table" style="color:var(--info)"></i> Inventory Summary</div>
+          <div id="rpTable"></div>
         </div>
       </section>
 
-      <section id="logsTab" class="tab-content hidden">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Audit & Security Logs</h2>
-        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-100 border-b">
-              <tr>
-                <th class="p-3">Timestamp</th>
-                <th class="p-3">User</th>
-                <th class="p-3">Action</th>
-                <th class="p-3">Details</th>
-              </tr>
-            </thead>
-            <tbody id="logsTableBody"></tbody>
-          </table>
+      <!-- ─── USERS ─── -->
+      <section id="sec-users" class="section">
+        <div class="ph">
+          <h2>👥 Users</h2>
+          <button class="btn btn-primary btn-sm" id="addUsrBtn" onclick="openUsrModal()"><i class="fas fa-plus"></i> Add User</button>
         </div>
-      </section>
-
-      <section id="usersTab" class="tab-content hidden">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">User Access Management</h2>
-        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-100 border-b">
-              <tr>
-                <th class="p-3">User ID</th>
-                <th class="p-3">Username</th>
-                <th class="p-3">Role</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody"></tbody>
+        <div id="usrAdminMsg" class="alert alert-warn" style="display:none;"><i class="fas fa-lock"></i> Only Admins can manage users.</div>
+        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="srchUsr" placeholder="Search users…" oninput="filterUsrs()" /></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="usrTbody"></tbody>
           </table>
         </div>
       </section>
 
     </main>
-  </div>
 
-  <div id="addProductModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl p-6 w-full max-w-md">
-      <h3 class="text-lg font-bold mb-4">Add New Item</h3>
-      <form id="addProductForm" class="space-y-3">
-        <input type="text" id="pName" placeholder="Item Name (e.g. 1pc Chickenjoy)" required class="w-full border p-2 rounded">
-        <input type="text" id="pCat" placeholder="Category (e.g. Chicken)" required class="w-full border p-2 rounded">
-        <input type="number" id="pQty" placeholder="Quantity" required class="w-full border p-2 rounded">
-        <input type="number" id="pPrice" step="0.01" placeholder="Price (PHP)" required class="w-full border p-2 rounded">
-        <input type="number" id="pMin" placeholder="Minimum Alert Stock Level" required class="w-full border p-2 rounded">
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="toggleModal('addProductModal')" class="px-4 py-2 border rounded">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Save</button>
-        </div>
-      </form>
+    <!-- BOTTOM NAV (mobile only) -->
+    <nav class="bottom-nav" id="bnav">
+      <button class="nav-item active" data-sec="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
+      <button class="nav-item" data-sec="products"><i class="fas fa-box-open"></i><span>Products</span></button>
+      <button class="nav-item" data-sec="orders"><i class="fas fa-shopping-cart"></i><span>Orders</span></button>
+      <button class="nav-item" data-sec="categories"><i class="fas fa-tags"></i><span>Categories</span></button>
+      <button class="nav-item" data-sec="reports"><i class="fas fa-chart-bar"></i><span>Reports</span></button>
+      <button class="nav-item" data-sec="suppliers"><i class="fas fa-truck"></i><span>Suppliers</span></button>
+      <button class="nav-item" data-sec="users"><i class="fas fa-users"></i><span>Users</span></button>
+    </nav>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════ -->
+
+<!-- PRODUCT MODAL -->
+<div class="modal-ov" id="mProd">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="mProdTitle">Add Product</h3><button class="modal-close" onclick="closeModal('mProd')">✕</button></div>
+    <input type="hidden" id="pId" />
+    <div class="form-group"><label>Product Name *</label><input type="text" id="pName" placeholder="e.g. Chickenjoy 1pc" /></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Category *</label><select id="pCat"><option value="">Select…</option></select></div>
+      <div class="form-group"><label>Emoji/Icon</label><input type="text" id="pEmoji" placeholder="🍗" maxlength="4" style="font-size:22px;text-align:center;" /></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Price (₱) *</label><input type="number" id="pPrice" placeholder="0.00" min="0" step="0.01" /></div>
+      <div class="form-group"><label>Stock Qty *</label><input type="number" id="pStock" placeholder="0" min="0" /></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Low Stock Alert</label><input type="number" id="pThresh" placeholder="10" min="1" /></div>
+      <div class="form-group"><label>Unit</label><input type="text" id="pUnit" placeholder="pc, box…" /></div>
+    </div>
+    <div class="form-group"><label>Supplier</label><select id="pSup"><option value="">Select…</option></select></div>
+    <div class="form-group"><label>Description</label><textarea id="pDesc" rows="2" placeholder="Optional"></textarea></div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mProd')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProd()"><i class="fas fa-save"></i> Save</button>
     </div>
   </div>
+</div>
 
-  <script>
-    // Palitan ng sarili mong Google Apps Script Web App URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbzsKFHEP_6GoAu6KGV8V6gIZZ58T5qbZvcuOuoIIa_zLWr9OAoL0eHGzMvvjtqSmtdLRA/exec";
+<!-- CATEGORY MODAL -->
+<div class="modal-ov" id="mCat">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="mCatTitle">Add Category</h3><button class="modal-close" onclick="closeModal('mCat')">✕</button></div>
+    <input type="hidden" id="cId" />
+    <div class="form-group"><label>Category Name *</label><input type="text" id="cName" placeholder="e.g. Chickenjoy Meals" /></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Emoji/Icon</label><input type="text" id="cEmoji" placeholder="🍗" maxlength="4" style="font-size:22px;text-align:center;" /></div>
+      <div class="form-group"><label>&nbsp;</label></div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="cDesc" rows="2" placeholder="Optional"></textarea></div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mCat')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCat()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
 
-    let currentUser = null;
+<!-- ORDER MODAL -->
+<div class="modal-ov" id="mOrd">
+  <div class="modal">
+    <div class="modal-hdr"><h3>New Transaction</h3><button class="modal-close" onclick="closeModal('mOrd')">✕</button></div>
+    <div class="form-group"><label>Product *</label><select id="oProds" onchange="fillOrdPrice()"><option value="">Select product…</option></select></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Type *</label>
+        <select id="oType"><option value="Sell">Sell (Stock Out)</option><option value="Restock">Restock (Stock In)</option></select>
+      </div>
+      <div class="form-group"><label>Quantity *</label><input type="number" id="oQty" placeholder="1" min="1" /></div>
+    </div>
+    <div class="form-group"><label>Unit Price (₱)</label><input type="number" id="oPrice" placeholder="0.00" min="0" step="0.01" /></div>
+    <div class="form-group"><label>Notes</label><textarea id="oNotes" rows="2" placeholder="Optional note…"></textarea></div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mOrd')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOrd()"><i class="fas fa-check"></i> Confirm</button>
+    </div>
+  </div>
+</div>
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('loginUser').value;
-      const p = document.getElementById('loginPass').value;
+<!-- SUPPLIER MODAL -->
+<div class="modal-ov" id="mSup">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="mSupTitle">Add Supplier</h3><button class="modal-close" onclick="closeModal('mSup')">✕</button></div>
+    <input type="hidden" id="sId" />
+    <div class="form-group"><label>Supplier Name *</label><input type="text" id="sName" placeholder="e.g. JFC Supply Corp." /></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Contact Person</label><input type="text" id="sCont" placeholder="Full name" /></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="sPhone" placeholder="+63…" /></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="sEmail" placeholder="supplier@email.com" /></div>
+    <div class="form-group"><label>Address</label><textarea id="sAddr" rows="2" placeholder="Complete address"></textarea></div>
+    <div class="form-group"><label>Products Supplied</label><input type="text" id="sProds" placeholder="Chicken, Fries, Drinks…" /></div>
+    <div class="form-group"><label>Status</label><select id="sStat"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mSup')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSup()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "login", username: u, password: p })
-        });
-        const data = await res.json();
+<!-- USER MODAL -->
+<div class="modal-ov" id="mUsr">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="mUsrTitle">Add User</h3><button class="modal-close" onclick="closeModal('mUsr')">✕</button></div>
+    <input type="hidden" id="uId" />
+    <div class="form-group"><label>Full Name *</label><input type="text" id="uName" placeholder="Juan dela Cruz" /></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Username *</label><input type="text" id="uUser" placeholder="juandc" /></div>
+      <div class="form-group"><label>Role *</label><select id="uRole"><option value="Staff">Staff</option><option value="Admin">Admin</option></select></div>
+    </div>
+    <div class="form-group"><label>Password *</label><input type="password" id="uPass" placeholder="Min. 6 characters" /></div>
+    <div class="form-group"><label>Status</label><select id="uStat"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mUsr')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUsr()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
 
-        if (data.status === "success") {
-          currentUser = data;
-          document.getElementById('displayUser').innerText = `${data.username} (${data.role})`;
-          document.getElementById('loginSection').classList.add('hidden');
-          document.getElementById('appSection').classList.remove('hidden');
-          loadData();
-        } else {
-          document.getElementById('loginError').classList.remove('hidden');
-        }
-      } catch(err) {
-        alert("Connection Error to Google Apps Script Backend.");
-      }
-    });
+<!-- DELETE CONFIRM -->
+<div class="modal-ov" id="mDel">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-hdr"><h3>Confirm Delete</h3><button class="modal-close" onclick="closeModal('mDel')">✕</button></div>
+    <p id="delMsg" style="font-size:13px;color:var(--gray-3);line-height:1.6;"></p>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('mDel')">Cancel</button>
+      <button class="btn btn-danger" id="delConfBtn"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
 
-    function logout() {
-      currentUser = null;
-      document.getElementById('appSection').classList.add('hidden');
-      document.getElementById('loginSection').classList.remove('hidden');
-    }
+<script>
+/* ──────────────────────────────────────────────────
+   CONFIG  ← paste your Apps Script Web App URL here
+────────────────────────────────────────────────── */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXiGysbvup0VkdHbGDiCO8lNYKDQGSoJTWkFdXZ3oPxUWVMRuJ2pD8M1Om-cFP7aWXgA/exec';
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(tabId).classList.remove('hidden');
-    }
+/* ── STATE ── */
+let SESSION   = null;
+let PRODUCTS  = [];
+let CATS      = [];
+let ORDERS    = [];
+let SUPPLIERS = [];
+let USERS     = [];
+let CHART_SALES = null, CHART_CAT = null, CHART_STOCK = null;
+let PROD_VIEW = 'grid';
 
-    function toggleModal(id) {
-      document.getElementById(id).classList.toggle('hidden');
-    }
+/* ── UTILS ── */
+const $  = id => document.getElementById(id);
+const fmt   = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN  = n => Number(n||0).toLocaleString('en-PH');
+const fmtD  = s => { try{ const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){return s;} };
 
-    async function loadData() {
-      fetchProducts();
-      fetchSuppliers();
-      fetchOrders();
-      fetchLogs();
-      fetchUsers();
-    }
+function toast(msg, ms=2800){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms); }
+function openModal(id){ $(id).classList.add('open'); }
+function closeModal(id){ $(id).classList.remove('open'); }
 
-    async function fetchProducts() {
-      const res = await fetch(`${API_URL}?action=getProducts`);
-      const items = await res.json();
-      
-      let stockHtml = "";
-      let lowStockCount = 0;
-      let categories = {};
+/* ── API ── */
+async function api(action, data={}){
+  try{
+    const body = JSON.stringify({ action, token: SESSION?.token||'', ...data });
+    const res  = await fetch(SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'text/plain'}, body });
+    return await res.json();
+  }catch(e){ console.error(e); return {success:false,error:e.message}; }
+}
 
-      items.forEach(i => {
-        const isLow = Number(i.Quantity) <= Number(i.MinStock);
-        if(isLow) lowStockCount++;
+/* ══════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════ */
+async function doLogin(){
+  const u=$('lgUser').value.trim(), p=$('lgPass').value.trim();
+  if(!u||!p){ showErr('Please enter username and password.'); return; }
+  const btn=$('lgBtn'); btn.innerHTML='<span class="spin"></span> Signing in…'; btn.disabled=true;
+  const r = await api('login',{username:u,password:p});
+  btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled=false;
+  if(r.success){ SESSION=r.user; localStorage.setItem('JIS_sess',JSON.stringify(r.user)); bootApp(); }
+  else showErr(r.error||'Invalid username or password.');
+}
 
-        categories[i.Category] = (categories[i.Category] || 0) + 1;
+function showErr(msg){ $('lgErrMsg').textContent=msg; $('lgErr').style.display='flex'; setTimeout(()=>$('lgErr').style.display='none',4000); }
 
-        stockHtml += `
-          <tr class="border-b hover:bg-gray-50">
-            <td class="p-3 font-mono text-xs">${i.ItemID}</td>
-            <td class="p-3 font-bold">${i.ItemName}</td>
-            <td class="p-3">${i.Category}</td>
-            <td class="p-3">${i.Quantity}</td>
-            <td class="p-3">₱${Number(i.Price).toFixed(2)}</td>
-            <td class="p-3">
-              <span class="px-2 py-1 text-xs rounded-full ${isLow ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
-                ${isLow ? 'Low Stock' : 'Sufficient'}
-              </span>
-            </td>
-          </tr>
-        `;
-      });
+function doLogout(){ SESSION=null; localStorage.removeItem('JIS_sess'); $('app').style.display='none'; $('loginPage').style.display='flex'; $('lgPass').value=''; }
 
-      document.getElementById('stockTableBody').innerHTML = stockHtml;
-      document.getElementById('dashTotalItems').innerText = items.length;
-      document.getElementById('dashLowStock').innerText = lowStockCount;
+function bootApp(){
+  $('loginPage').style.display='none';
+  $('app').style.display='flex';
+  $('sbName').textContent = SESSION.name||SESSION.username;
+  $('sbRole').textContent = SESSION.role;
+  $('tbAvatar').textContent = (SESSION.name||SESSION.username).charAt(0).toUpperCase();
+  if(SESSION.role!=='Admin'){ $('addUsrBtn').style.display='none'; $('usrAdminMsg').style.display='flex'; }
+  navigate('dashboard');
+}
 
-      let catHtml = "";
-      for (let c in categories) {
-        catHtml += `
-          <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <h4 class="font-bold text-lg text-red-600">${c}</h4>
-            <p class="text-sm text-gray-500">${categories[c]} unique item(s)</p>
-          </div>
-        `;
-      }
-      document.getElementById('categoryContainer').innerHTML = catHtml;
-    }
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
+const NAV_TITLES = {dashboard:'Dashboard',products:'Products',categories:'Categories',orders:'Orders',suppliers:'Suppliers',reports:'Reports',users:'Users'};
+function navigate(sec){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  $('sec-'+sec).classList.add('active');
+  document.querySelectorAll('.sb-item,.nav-item').forEach(b=>{ b.classList.toggle('active', b.dataset.sec===sec); });
+  $('tbTitle').textContent = NAV_TITLES[sec]||sec;
+  if(sec==='dashboard')  loadDashboard();
+  if(sec==='products')   loadProducts();
+  if(sec==='categories') loadCats();
+  if(sec==='orders')     loadOrders();
+  if(sec==='suppliers')  loadSuppliers();
+  if(sec==='reports')    loadReports();
+  if(sec==='users')      loadUsers();
+}
+document.querySelectorAll('.sb-item,.nav-item').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.sec)));
 
-    async function fetchSuppliers() {
-      const res = await fetch(`${API_URL}?action=getSuppliers`);
-      const data = await res.json();
-      let html = "";
-      data.forEach(s => {
-        html += `<tr class="border-b"><td class="p-3">${s.SupplierID}</td><td class="p-3 font-bold">${s.SupplierName}</td><td class="p-3">${s.ContactPerson}</td><td class="p-3">${s.Phone}</td></tr>`;
-      });
-      document.getElementById('suppliersTableBody').innerHTML = html;
-    }
+/* ══════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════ */
+async function loadDashboard(){
+  const r = await api('getDashboard');
+  if(!r.success){ toast('❌ Failed to load dashboard'); return; }
+  const d = r.data;
+  $('stProd').textContent = fmtN(d.totalProducts);
+  $('stLow').textContent  = fmtN(d.lowStockCount);
+  $('stOrd').textContent  = fmtN(d.totalOrders);
+  $('stRev').textContent  = fmt(d.totalRevenue);
 
-    async function fetchOrders() {
-      const res = await fetch(`${API_URL}?action=getOrders`);
-      const data = await res.json();
-      document.getElementById('dashOrders').innerText = data.length;
-      let html = "";
-      data.forEach(o => {
-        html += `<tr class="border-b"><td class="p-3">${o.OrderID}</td><td class="p-3">${o.ItemName}</td><td class="p-3">${o.QtyOrdered}</td><td class="p-3">${o.OrderDate}</td><td class="p-3"><span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">${o.Status}</span></td></tr>`;
-      });
-      document.getElementById('reorderTableBody').innerHTML = html;
-    }
+  // alerts
+  const al=$('dashAlerts'); al.innerHTML='';
+  if(d.lowStockItems?.length){
+    const names=d.lowStockItems.slice(0,3).map(p=>`<b>${p.name}</b> (${p.stock} left)`).join(', ');
+    al.innerHTML=`<div class="alert alert-warn"><i class="fas fa-exclamation-triangle"></i><span>Low stock: ${names}${d.lowStockItems.length>3?' …and more':''}</span></div>`;
+  }
 
-    async function fetchLogs() {
-      const res = await fetch(`${API_URL}?action=getLogs`);
-      const data = await res.json();
-      let html = "";
-      data.reverse().forEach(l => {
-        html += `<tr class="border-b"><td class="p-3 text-xs text-gray-500">${l.Timestamp}</td><td class="p-3 font-semibold">${l.User}</td><td class="p-3 text-xs font-mono">${l.Action}</td><td class="p-3">${l.Details}</td></tr>`;
-      });
-      document.getElementById('logsTableBody').innerHTML = html;
-    }
+  // sales chart
+  if(CHART_SALES) CHART_SALES.destroy();
+  CHART_SALES = new Chart($('chartSales').getContext('2d'),{
+    type:'line',
+    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],fill:true,borderColor:'#008080',backgroundColor:'rgba(0,128,128,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
+    options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}} }
+  });
 
-    async function fetchUsers() {
-      const res = await fetch(`${API_URL}?action=getUsers`);
-      const data = await res.json();
-      let html = "";
-      data.forEach(u => {
-        html += `<tr class="border-b"><td class="p-3">${u.UserID}</td><td class="p-3 font-bold">${u.Username}</td><td class="p-3">${u.Role}</td></tr>`;
-      });
-      document.getElementById('usersTableBody').innerHTML = html;
-    }
+  // top products
+  const tp=$('dashTop');
+  tp.innerHTML = d.topProducts?.length
+    ? d.topProducts.map(p=>`<div class="ord-item"><div class="ord-icon" style="background:var(--primary-l)">${p.emoji||'📦'}</div><div class="ord-info"><div class="ord-name">${p.name}</div><div class="ord-meta">${fmtN(p.sold)} units sold</div></div><div class="ord-right"><div class="ord-amt">${fmt(p.revenue)}</div></div></div>`).join('')
+    : '<div class="empty"><i class="fas fa-box-open"></i><p>No sales data yet.</p></div>';
 
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        action: "addProduct",
-        itemName: document.getElementById('pName').value,
-        category: document.getElementById('pCat').value,
-        quantity: document.getElementById('pQty').value,
-        price: document.getElementById('pPrice').value,
-        minStock: document.getElementById('pMin').value,
-        user: currentUser ? currentUser.username : "Admin"
-      };
+  // recent orders
+  const ro=$('dashRecent');
+  ro.innerHTML = d.recentOrders?.length
+    ? d.recentOrders.slice(0,5).map(o=>`<div class="ord-item"><div class="ord-icon" style="background:${o.type==='Sell'?'#fee2e2':'#dcfce7'};color:${o.type==='Sell'?'#dc2626':'#16a34a'}">${o.type==='Sell'?'🛒':'📥'}</div><div class="ord-info"><div class="ord-name">${o.product}</div><div class="ord-meta">${o.type} · ${fmtD(o.date)}</div></div><div class="ord-right"><div class="ord-amt" style="color:${o.type==='Sell'?'var(--danger)':'var(--success)'}">${o.type==='Sell'?'−':'+'}${fmtN(o.qty)}</div></div></div>`).join('')
+    : '<div class="empty"><i class="fas fa-shopping-cart"></i><p>No recent orders.</p></div>';
+}
 
-      await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-      toggleModal('addProductModal');
-      loadData();
-    });
-  </script>
+/* ══════════════════════════════════════════════════
+   PRODUCTS
+══════════════════════════════════════════════════ */
+async function loadProducts(){
+  const r=await api('getProducts');
+  if(!r.success){ toast('❌ Failed to load products'); return; }
+  PRODUCTS=r.data||[];
+  refreshCatFilter();
+  filterProds();
+}
+function refreshCatFilter(){
+  const sel=$('filtProdCat'), cur=sel.value;
+  sel.innerHTML='<option value="">All Categories</option>';
+  [...new Set(PRODUCTS.map(p=>p.category).filter(Boolean))].forEach(c=>sel.insertAdjacentHTML('beforeend',`<option value="${c}"${c===cur?' selected':''}>${c}</option>`));
+}
+function filterProds(){
+  const q=$('srchProd').value.toLowerCase(), cat=$('filtProdCat').value;
+  const f=PRODUCTS.filter(p=>(p.name||'').toLowerCase().includes(q)&&(!cat||p.category===cat));
+  renderProds(f);
+}
+function setProdView(v){
+  PROD_VIEW=v;
+  $('vGrid').classList.toggle('active',v==='grid');
+  $('vList').classList.toggle('active',v==='list');
+  $('prodGrid').style.display=v==='grid'?'grid':'none';
+  $('prodTable').style.display=v==='list'?'block':'none';
+  filterProds();
+}
+function renderProds(list){
+  const isLow=p=>Number(p.stock)<=Number(p.threshold||10);
+  // grid
+  $('prodGrid').innerHTML = list.length
+    ? list.map(p=>`<div class="prod-card">
+        <div class="p-img">${p.emoji||'📦'}</div>
+        <div class="p-name">${p.name}</div>
+        <div class="p-cat"><span class="chip">${p.category||'–'}</span></div>
+        <div class="p-price">${fmt(p.price)}</div>
+        <div class="p-stock ${isLow(p)?'low':'ok'}"><i class="fas fa-${isLow(p)?'exclamation-triangle':'check-circle'}"></i> ${fmtN(p.stock)} ${p.unit||'pcs'}</div>
+        <div class="p-acts">
+          <button class="btn btn-outline btn-sm" onclick="openProdModal('${p.rowId}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDel('product','${p.rowId}','${esc(p.name)}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`).join('')
+    : '<div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No products found.</p></div>';
+  // table
+  $('prodTbody').innerHTML = list.map((p,i)=>`<tr>
+    <td>${i+1}</td><td><b>${p.emoji||'📦'} ${p.name}</b></td>
+    <td><span class="chip">${p.category||'–'}</span></td>
+    <td>${fmt(p.price)}</td>
+    <td class="${isLow(p)?'low':'ok'}">${fmtN(p.stock)} ${p.unit||'pcs'}</td>
+    <td><span class="badge ${isLow(p)?'b-danger':'b-success'}">${isLow(p)?'Low Stock':'In Stock'}</span></td>
+    <td>
+      <button class="btn btn-outline btn-sm" onclick="openProdModal('${p.rowId}')"><i class="fas fa-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDel('product','${p.rowId}','${esc(p.name)}')"><i class="fas fa-trash"></i></button>
+    </td></tr>`).join('');
+}
+async function openProdModal(rowId=null){
+  const cs=$('pCat'); cs.innerHTML='<option value="">Select…</option>';
+  if(!CATS.length){ const r=await api('getCategories'); CATS=r.data||[]; }
+  CATS.forEach(c=>cs.insertAdjacentHTML('beforeend',`<option value="${c.name}">${c.name}</option>`));
+  const ss=$('pSup'); ss.innerHTML='<option value="">Select…</option>';
+  if(!SUPPLIERS.length){ const r=await api('getSuppliers'); SUPPLIERS=r.data||[]; }
+  SUPPLIERS.forEach(s=>ss.insertAdjacentHTML('beforeend',`<option value="${s.name}">${s.name}</option>`));
+  if(rowId){
+    const p=PRODUCTS.find(x=>x.rowId===rowId); if(!p) return;
+    $('mProdTitle').textContent='Edit Product';
+    $('pId').value=rowId; $('pName').value=p.name; $('pCat').value=p.category;
+    $('pPrice').value=p.price; $('pStock').value=p.stock; $('pThresh').value=p.threshold||10;
+    $('pUnit').value=p.unit||''; $('pSup').value=p.supplier||''; $('pDesc').value=p.description||''; $('pEmoji').value=p.emoji||'📦';
+  } else {
+    $('mProdTitle').textContent='Add Product';
+    ['pId','pName','pPrice','pStock','pDesc'].forEach(i=>$(i).value='');
+    $('pCat').value=''; $('pSup').value=''; $('pThresh').value='10'; $('pUnit').value='pcs'; $('pEmoji').value='📦';
+  }
+  openModal('mProd');
+}
+async function saveProd(){
+  const name=$('pName').value.trim(), cat=$('pCat').value, price=$('pPrice').value, stock=$('pStock').value;
+  if(!name||!cat||price===''||stock===''){ toast('⚠️ Fill all required fields.'); return; }
+  const d={ rowId:$('pId').value, name, category:cat, price:+price, stock:+stock, threshold:+($('pThresh').value)||10, unit:$('pUnit').value||'pcs', supplier:$('pSup').value, description:$('pDesc').value, emoji:$('pEmoji').value||'📦' };
+  const r=await api(d.rowId?'updateProduct':'addProduct',{product:d});
+  if(r.success){ closeModal('mProd'); toast(`✅ Product ${d.rowId?'updated':'added'}!`); loadProducts(); }
+  else toast('❌ '+( r.error||'Error'));
+}
+
+/* ══════════════════════════════════════════════════
+   CATEGORIES
+══════════════════════════════════════════════════ */
+async function loadCats(){
+  const r=await api('getCategories');
+  if(!r.success){ toast('❌ Failed to load categories'); return; }
+  CATS=r.data||[];
+  filterCats();
+}
+function filterCats(){
+  const q=$('srchCat').value.toLowerCase();
+  renderCats(CATS.filter(c=>(c.name||'').toLowerCase().includes(q)));
+}
+function renderCats(list){
+  const el=$('catGrid');
+  el.innerHTML=list.length
+    ? list.map(c=>{ const cnt=PRODUCTS.filter(p=>p.category===c.name).length; return `<div class="cat-card">
+        <div class="cat-actions">
+          <button class="btn btn-outline btn-sm" onclick="openCatModal('${c.rowId}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDel('category','${c.rowId}','${esc(c.name)}')"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="cat-icon">${c.emoji||'📁'}</div>
+        <div class="cat-name">${c.name}</div>
+        <div class="cat-count">${cnt} product${cnt!==1?'s':''}</div>
+      </div>`}).join('')
+    : '<div class="empty" style="grid-column:1/-1"><i class="fas fa-tags"></i><p>No categories found.</p></div>';
+}
+function openCatModal(rowId=null){
+  if(rowId){ const c=CATS.find(x=>x.rowId===rowId); if(!c) return; $('mCatTitle').textContent='Edit Category'; $('cId').value=rowId; $('cName').value=c.name; $('cEmoji').value=c.emoji||'📁'; $('cDesc').value=c.description||''; }
+  else { $('mCatTitle').textContent='Add Category'; ['cId','cName','cDesc'].forEach(i=>$(i).value=''); $('cEmoji').value='📁'; }
+  openModal('mCat');
+}
+async function saveCat(){
+  const name=$('cName').value.trim(); if(!name){ toast('⚠️ Category name required.'); return; }
+  const d={rowId:$('cId').value,name,emoji:$('cEmoji').value||'📁',description:$('cDesc').value};
+  const r=await api(d.rowId?'updateCategory':'addCategory',{category:d});
+  if(r.success){ closeModal('mCat'); toast(`✅ Category ${d.rowId?'updated':'added'}!`); loadCats(); }
+  else toast('❌ '+(r.error||'Error'));
+}
+
+/* ══════════════════════════════════════════════════
+   ORDERS
+══════════════════════════════════════════════════ */
+async function loadOrders(){
+  const r=await api('getOrders');
+  if(!r.success){ toast('❌ Failed to load orders'); return; }
+  ORDERS=r.data||[];
+  filterOrds();
+}
+function filterOrds(){
+  const q=$('srchOrd').value.toLowerCase(), tp=$('filtOrdType').value;
+  renderOrds(ORDERS.filter(o=>(o.product||'').toLowerCase().includes(q)&&(!tp||o.type===tp)));
+}
+function renderOrds(list){
+  const el=$('ordList');
+  el.innerHTML=list.length
+    ? list.map(o=>`<div class="ord-item">
+        <div class="ord-icon" style="background:${o.type==='Sell'?'#fee2e2':'#dcfce7'};color:${o.type==='Sell'?'#dc2626':'#16a34a'}">${o.type==='Sell'?'🛒':'📥'}</div>
+        <div class="ord-info">
+          <div class="ord-name">${o.product}</div>
+          <div class="ord-meta">${o.type==='Sell'?'Sold':'Restocked'} · Qty: ${fmtN(o.qty)} · ${fmtD(o.date)}</div>
+          ${o.notes?`<div class="ord-meta">${o.notes}</div>`:''}
+        </div>
+        <div class="ord-right">
+          <div class="ord-amt" style="color:${o.type==='Sell'?'var(--danger)':'var(--success)'}">${o.type==='Sell'?'−':'+'}${fmtN(o.qty)}</div>
+          <div class="ord-total">${fmt(o.total)}</div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty"><i class="fas fa-shopping-cart"></i><p>No orders found.</p></div>';
+}
+async function openOrdModal(){
+  const sel=$('oProds'); sel.innerHTML='<option value="">Select product…</option>';
+  if(!PRODUCTS.length){ const r=await api('getProducts'); PRODUCTS=r.data||[]; }
+  PRODUCTS.forEach(p=>sel.insertAdjacentHTML('beforeend',`<option value="${p.rowId}" data-price="${p.price}" data-stock="${p.stock}">${p.emoji||'📦'} ${p.name} (Stock: ${p.stock})</option>`));
+  $('oQty').value=''; $('oPrice').value=''; $('oNotes').value=''; $('oType').value='Sell';
+  openModal('mOrd');
+}
+function fillOrdPrice(){ const o=$('oProds'); const op=o.options[o.selectedIndex]; if(op?.dataset?.price) $('oPrice').value=op.dataset.price; }
+async function saveOrd(){
+  const pRowId=$('oProds').value, type=$('oType').value, qty=+$('oQty').value, price=+$('oPrice').value;
+  if(!pRowId||!qty){ toast('⚠️ Fill required fields.'); return; }
+  const prod=PRODUCTS.find(p=>p.rowId===pRowId); if(!prod) return;
+  if(type==='Sell'&&qty>+prod.stock){ toast('⚠️ Not enough stock!'); return; }
+  const r=await api('addOrder',{order:{productRowId:pRowId,product:prod.name,type,qty,price,total:qty*price,notes:$('oNotes').value,date:new Date().toISOString()}});
+  if(r.success){ closeModal('mOrd'); toast('✅ Transaction recorded!'); loadOrders(); PRODUCTS=[]; }
+  else toast('❌ '+(r.error||'Error'));
+}
+
+/* ══════════════════════════════════════════════════
+   SUPPLIERS
+══════════════════════════════════════════════════ */
+async function loadSuppliers(){
+  const r=await api('getSuppliers');
+  if(!r.success){ toast('❌ Failed to load suppliers'); return; }
+  SUPPLIERS=r.data||[];
+  filterSups();
+}
+function filterSups(){
+  const q=$('srchSup').value.toLowerCase();
+  renderSups(SUPPLIERS.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.contact||'').toLowerCase().includes(q)));
+}
+function renderSups(list){
+  const tb=$('supTbody');
+  tb.innerHTML=list.length
+    ? list.map((s,i)=>`<tr>
+        <td>${i+1}</td><td><b>${s.name}</b></td>
+        <td>${s.contact||'–'}<br><small style="color:var(--gray-2)">${s.phone||''}</small></td>
+        <td>${s.email||'–'}</td><td>${s.products||'–'}</td>
+        <td><span class="badge ${s.status==='Active'?'b-success':'b-gray'}">${s.status||'Active'}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="openSupModal('${s.rowId}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDel('supplier','${s.rowId}','${esc(s.name)}')"><i class="fas fa-trash"></i></button>
+        </td></tr>`).join('')
+    : '<tr><td colspan="7"><div class="empty"><i class="fas fa-truck"></i><p>No suppliers found.</p></div></td></tr>';
+}
+function openSupModal(rowId=null){
+  if(rowId){ const s=SUPPLIERS.find(x=>x.rowId===rowId); if(!s) return; $('mSupTitle').textContent='Edit Supplier'; $('sId').value=rowId; $('sName').value=s.name; $('sCont').value=s.contact||''; $('sPhone').value=s.phone||''; $('sEmail').value=s.email||''; $('sAddr').value=s.address||''; $('sProds').value=s.products||''; $('sStat').value=s.status||'Active'; }
+  else { $('mSupTitle').textContent='Add Supplier'; ['sId','sName','sCont','sPhone','sEmail','sAddr','sProds'].forEach(i=>$(i).value=''); $('sStat').value='Active'; }
+  openModal('mSup');
+}
+async function saveSup(){
+  const name=$('sName').value.trim(); if(!name){ toast('⚠️ Supplier name required.'); return; }
+  const d={rowId:$('sId').value,name,contact:$('sCont').value,phone:$('sPhone').value,email:$('sEmail').value,address:$('sAddr').value,products:$('sProds').value,status:$('sStat').value};
+  const r=await api(d.rowId?'updateSupplier':'addSupplier',{supplier:d});
+  if(r.success){ closeModal('mSup'); toast(`✅ Supplier ${d.rowId?'updated':'added'}!`); loadSuppliers(); }
+  else toast('❌ '+(r.error||'Error'));
+}
+
+/* ══════════════════════════════════════════════════
+   REPORTS
+══════════════════════════════════════════════════ */
+async function loadReports(){
+  const [pr,or]=await Promise.all([api('getProducts'),api('getOrders')]);
+  const prods=pr.data||[], ords=or.data||[];
+  const sells=ords.filter(o=>o.type==='Sell');
+  const rev=sells.reduce((s,o)=>s+Number(o.total||0),0);
+  const low=prods.filter(p=>Number(p.stock)<=Number(p.threshold||10)).length;
+  $('rpRev').textContent=fmt(rev); $('rpOrd').textContent=fmtN(ords.length);
+  $('rpProd').textContent=fmtN(prods.length); $('rpLow').textContent=fmtN(low);
+
+  // cat chart
+  const catRev={};
+  sells.forEach(o=>{ const p=prods.find(x=>x.name===o.product); const c=p?.category||'Other'; catRev[c]=(catRev[c]||0)+Number(o.total||0); });
+  if(CHART_CAT) CHART_CAT.destroy();
+  CHART_CAT=new Chart($('chartCat').getContext('2d'),{ type:'bar', data:{ labels:Object.keys(catRev), datasets:[{label:'Revenue (₱)',data:Object.values(catRev),backgroundColor:['#008080','#e8334a','#f59e0b','#3b82f6','#22c55e','#8b5cf6','#ec4899']}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} });
+
+  // stock chart
+  const catStock={};
+  prods.forEach(p=>{ const c=p.category||'Other'; catStock[c]=(catStock[c]||0)+Number(p.stock||0); });
+  if(CHART_STOCK) CHART_STOCK.destroy();
+  CHART_STOCK=new Chart($('chartStock').getContext('2d'),{ type:'doughnut', data:{ labels:Object.keys(catStock), datasets:[{data:Object.values(catStock),backgroundColor:['#008080','#e8334a','#f59e0b','#3b82f6','#22c55e','#8b5cf6','#ec4899']}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} });
+
+  // inventory table
+  $('rpTable').innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Price</th><th>Stock Value</th><th>Status</th></tr></thead>
+    <tbody>${prods.map(p=>{ const l=Number(p.stock)<=Number(p.threshold||10); return `<tr><td>${p.emoji||'📦'} <b>${p.name}</b></td><td>${p.category||'–'}</td><td class="${l?'low':'ok'}">${fmtN(p.stock)}</td><td>${fmt(p.price)}</td><td>${fmt(Number(p.stock)*Number(p.price))}</td><td><span class="badge ${l?'b-danger':'b-success'}">${l?'Low':'OK'}</span></td></tr>`; }).join('')}</tbody>
+  </table></div>`;
+}
+function exportCSV(){
+  if(!PRODUCTS.length){ toast('No data to export.'); return; }
+  const rows=[['Product','Category','Price','Stock','Unit','Threshold','Stock Value']];
+  PRODUCTS.forEach(p=>rows.push([p.name,p.category,p.price,p.stock,p.unit||'pcs',p.threshold||10,Number(p.stock)*Number(p.price)]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`jollibee_inventory_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); toast('📥 Export started!');
+}
+
+/* ══════════════════════════════════════════════════
+   USERS
+══════════════════════════════════════════════════ */
+async function loadUsers(){
+  if(SESSION.role!=='Admin') return;
+  const r=await api('getUsers');
+  if(!r.success){ toast('❌ Failed to load users'); return; }
+  USERS=r.data||[];
+  filterUsrs();
+}
+function filterUsrs(){
+  const q=$('srchUsr').value.toLowerCase();
+  renderUsrs(USERS.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.username||'').toLowerCase().includes(q)));
+}
+function renderUsrs(list){
+  const tb=$('usrTbody');
+  tb.innerHTML=list.length
+    ? list.map((u,i)=>`<tr>
+        <td>${i+1}</td><td>${u.name}</td><td>${u.username}</td>
+        <td><span class="badge ${u.role==='Admin'?'b-purple':'b-info'}">${u.role}</span></td>
+        <td><span class="badge ${u.status==='Active'?'b-success':'b-gray'}">${u.status||'Active'}</span></td>
+        <td>${u.username!==SESSION.username
+          ?`<button class="btn btn-outline btn-sm" onclick="openUsrModal('${u.rowId}')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="confirmDel('user','${u.rowId}','${esc(u.name)}')"><i class="fas fa-trash"></i></button>`
+          :'<span style="font-size:11px;color:var(--gray-2)">You</span>'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>No users.</p></div></td></tr>';
+}
+function openUsrModal(rowId=null){
+  if(SESSION.role!=='Admin'){ toast('Admins only.'); return; }
+  if(rowId){ const u=USERS.find(x=>x.rowId===rowId); if(!u) return; $('mUsrTitle').textContent='Edit User'; $('uId').value=rowId; $('uName').value=u.name; $('uUser').value=u.username; $('uRole').value=u.role; $('uPass').value=''; $('uStat').value=u.status||'Active'; }
+  else { $('mUsrTitle').textContent='Add User'; ['uId','uName','uUser','uPass'].forEach(i=>$(i).value=''); $('uRole').value='Staff'; $('uStat').value='Active'; }
+  openModal('mUsr');
+}
+async function saveUsr(){
+  const name=$('uName').value.trim(), uname=$('uUser').value.trim(), pass=$('uPass').value, rowId=$('uId').value;
+  if(!name||!uname){ toast('⚠️ Name and username required.'); return; }
+  if(!rowId&&pass.length<6){ toast('⚠️ Password must be 6+ chars.'); return; }
+  const d={rowId,name,username:uname,role:$('uRole').value,status:$('uStat').value};
+  if(pass) d.password=pass;
+  const r=await api(rowId?'updateUser':'addUser',{user:d});
+  if(r.success){ closeModal('mUsr'); toast(`✅ User ${rowId?'updated':'added'}!`); loadUsers(); }
+  else toast('❌ '+(r.error||'Error'));
+}
+
+/* ══════════════════════════════════════════════════
+   DELETE
+══════════════════════════════════════════════════ */
+function confirmDel(type,rowId,name){
+  $('delMsg').innerHTML=`Are you sure you want to delete <b>${name}</b>? This cannot be undone.`;
+  $('delConfBtn').onclick=()=>doDel(type,rowId);
+  openModal('mDel');
+}
+async function doDel(type,rowId){
+  const map={product:'deleteProduct',category:'deleteCategory',supplier:'deleteSupplier',user:'deleteUser'};
+  const r=await api(map[type],{rowId});
+  closeModal('mDel');
+  if(r.success){
+    toast('🗑️ Deleted!');
+    if(type==='product')  loadProducts();
+    if(type==='category') loadCats();
+    if(type==='supplier') loadSuppliers();
+    if(type==='user')     loadUsers();
+  } else toast('❌ '+(r.error||'Error'));
+}
+
+/* ── HELPERS ── */
+function esc(s){ return (s||'').replace(/'/g,"\\'"); }
+
+/* ── CLOSE MODAL ON OVERLAY CLICK ── */
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+/* ── AUTO LOGIN FROM SESSION ── */
+window.addEventListener('load',()=>{
+  const s=localStorage.getItem('JIS_sess');
+  if(s){ try{ SESSION=JSON.parse(s); bootApp(); }catch(e){ localStorage.removeItem('JIS_sess'); } }
+});
+</script>
 </body>
 </html>
