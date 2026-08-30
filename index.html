@@ -24,14 +24,14 @@
         <p class="text-muted">Inventory System Login</p>
       </div>
       <div id="login-alert" class="alert alert-danger d-none"></div>
-      <form id="loginForm" onsubmit="handleLogin(event)">
+      <form onsubmit="handleLogin(event)">
         <div class="mb-3">
           <label class="form-label">Username</label>
-          <input type="text" id="username" class="form-control" required placeholder="Enter username">
+          <input type="text" id="username" class="form-control" required>
         </div>
         <div class="mb-3">
           <label class="form-label">Password</label>
-          <input type="password" id="password" class="form-control" required placeholder="Enter password">
+          <input type="password" id="password" class="form-control" required>
         </div>
         <button type="submit" id="loginBtn" class="btn btn-danger w-100 fw-bold">Login</button>
       </form>
@@ -43,248 +43,148 @@
     <div class="container-fluid">
       <div class="row">
         
-        <!-- SIDEBAR NAVIGATION (7 FEATURES) -->
-        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
-          <div class="d-flex align-items-center mb-3 text-white text-decoration-none">
+        <!-- SIDEBAR NAVIGATION -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar p-3">
+          <div class="d-flex align-items-center mb-3 text-white">
             <span class="fs-4 fw-bold text-danger">Jollibee<span class="text-white fs-6"> Inv</span></span>
           </div>
           <hr>
           <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-              <a class="nav-link active" onclick="switchPage('dashboard', this)">
-                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('inventory', this)">
-                <i class="bi bi-box-seam me-2"></i> Stock Inventory
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('stock-in', this)">
-                <i class="bi bi-arrow-down-right-square me-2"></i> Stock In
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('stock-out', this)">
-                <i class="bi bi-arrow-up-left-square me-2"></i> Stock Out
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('spoilage', this)">
-                <i class="bi bi-trash me-2"></i> Spoilage Log
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('suppliers', this)">
-                <i class="bi bi-truck me-2"></i> Suppliers
-              </a>
-            </li>
-            <li>
-              <a class="nav-link" onclick="switchPage('reports', this)">
-                <i class="bi bi-file-earmark-bar-graph me-2"></i> Reports & Logs
-              </a>
-            </li>
+            <li><a class="nav-link active" onclick="switchPage('dashboard', this)"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+            <li><a class="nav-link" onclick="switchPage('inventory', this)"><i class="bi bi-box-seam me-2"></i> Stock Inventory</a></li>
+            <li><a class="nav-link" onclick="switchPage('stock-in', this)"><i class="bi bi-arrow-down-right-square me-2"></i> Stock In</a></li>
+            <li><a class="nav-link" onclick="switchPage('stock-out', this)"><i class="bi bi-arrow-up-left-square me-2"></i> Stock Out</a></li>
+            <li><a class="nav-link" onclick="switchPage('spoilage', this)"><i class="bi bi-trash me-2"></i> Spoilage Log</a></li>
+            <li><a class="nav-link" onclick="switchPage('suppliers', this)"><i class="bi bi-truck me-2"></i> Suppliers</a></li>
+            <li><a class="nav-link" onclick="switchPage('reports', this)"><i class="bi bi-file-earmark-bar-graph me-2"></i> Audit Logs</a></li>
           </ul>
           <hr>
-          <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()">
-            <i class="bi bi-box-arrow-right me-1"></i> Logout
-          </button>
+          <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
         </nav>
 
         <!-- MAIN CONTENT AREA -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
           
-          <!-- MODULE 1: DASHBOARD -->
+          <!-- 1. DASHBOARD -->
           <div id="page-dashboard" class="page-content">
             <h2 class="fw-bold mb-4">Store Overview</h2>
             <div class="row g-3 mb-4">
               <div class="col-md-4">
                 <div class="card card-summary shadow-sm p-3">
-                  <h6 class="text-muted">Total Stock Items</h6>
-                  <h3 class="fw-bold">128</h3>
+                  <h6 class="text-muted">Total Active Items</h6>
+                  <h3 class="fw-bold" id="dash-total-items">0</h3>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="card card-summary shadow-sm p-3 border-start border-warning border-5">
-                  <h6 class="text-muted">Low Stock Warnings</h6>
-                  <h3 class="fw-bold text-warning">4 Items</h3>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card card-summary shadow-sm p-3 border-start border-danger border-5">
-                  <h6 class="text-muted">Spoiled / Waste Today</h6>
-                  <h3 class="fw-bold text-danger">2.5 kg</h3>
+                  <h6 class="text-muted">Low Stock Items</h6>
+                  <h3 class="fw-bold text-warning" id="dash-low-stock">0</h3>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- MODULE 2: STOCK INVENTORY -->
+          <!-- 2. STOCK INVENTORY -->
           <div id="page-inventory" class="page-content d-none">
             <h2 class="fw-bold mb-3">Stock Inventory</h2>
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
               <table class="table table-hover align-middle">
                 <thead class="table-dark">
-                  <tr>
-                    <th>Code</th>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Unit</th>
-                    <th>Status</th>
-                  </tr>
+                  <tr><th>Code</th><th>Item Name</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Min Level</th><th>Status</th></tr>
                 </thead>
-                <tbody id="inventory-table-body">
-                  <tr>
-                    <td>JOL-001</td>
-                    <td>Chickenjoy Premix Flour</td>
-                    <td>Dry Goods</td>
-                    <td>15</td>
-                    <td>Bags</td>
-                    <td><span class="badge bg-success">In Stock</span></td>
-                  </tr>
-                </tbody>
+                <tbody id="inventory-table-body"></tbody>
               </table>
             </div>
           </div>
 
-          <!-- MODULE 3: STOCK IN (RECEIVING) -->
+          <!-- 3. STOCK IN -->
           <div id="page-stock-in" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Stock In (Receiving Supply)</h2>
-            <div class="card p-4 shadow-sm bg-white" style="max-width: 600px;">
-              <form>
+            <h2 class="fw-bold mb-3">Stock In (Receiving)</h2>
+            <div class="card p-4 shadow-sm max-w-600">
+              <form onsubmit="handleTransaction(event, 'addStockIn')">
                 <div class="mb-3">
-                  <label class="form-label">Select Item</label>
-                  <select class="form-select">
-                    <option>JOL-001 - Chickenjoy Premix Flour</option>
-                    <option>JOL-002 - Burger Patties (100s)</option>
-                  </select>
+                  <label class="form-label">Select Item Code</label>
+                  <select class="form-select item-dropdown" id="in-code" required></select>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Quantity Received</label>
-                  <input type="number" class="form-control" placeholder="Enter quantity">
+                  <input type="number" id="in-qty" class="form-control" required min="1">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Delivery Receipt (DR) Number</label>
-                  <input type="text" class="form-control" placeholder="DR-XXXXXX">
+                  <label class="form-label">Supplier / Commissary DR Number</label>
+                  <input type="text" id="in-supplier" class="form-control" placeholder="e.g., Jollibee Main Commissary / DR-1029" required>
                 </div>
-                <button type="button" class="btn btn-danger fw-bold">Add to Stock</button>
+                <button type="submit" class="btn btn-success fw-bold">Submit Stock In</button>
               </form>
             </div>
           </div>
 
-          <!-- MODULE 4: STOCK OUT (USAGE) -->
+          <!-- 4. STOCK OUT -->
           <div id="page-stock-out" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Stock Out (Kitchen Usage)</h2>
-            <div class="card p-4 shadow-sm bg-white" style="max-width: 600px;">
-              <form>
+            <h2 class="fw-bold mb-3">Stock Out (Usage)</h2>
+            <div class="card p-4 shadow-sm max-w-600">
+              <form onsubmit="handleTransaction(event, 'addStockOut')">
                 <div class="mb-3">
-                  <label class="form-label">Select Item</label>
-                  <select class="form-select">
-                    <option>JOL-001 - Chickenjoy Premix Flour</option>
-                    <option>JOL-002 - Burger Patties (100s)</option>
-                  </select>
+                  <label class="form-label">Select Item Code</label>
+                  <select class="form-select item-dropdown" id="out-code" required></select>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Quantity Used</label>
-                  <input type="number" class="form-control" placeholder="Enter quantity used">
+                  <input type="number" id="out-qty" class="form-control" required min="1">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Shift / Purpose</label>
-                  <select class="form-select">
-                    <option>Opening Shift Usage</option>
-                    <option>Mid Shift Usage</option>
-                    <option>Closing Shift Usage</option>
-                  </select>
+                  <label class="form-label">Reason / Shift</label>
+                  <input type="text" id="out-reason" class="form-control" placeholder="e.g., Kitchen Consumption Morning Shift" required>
                 </div>
-                <button type="button" class="btn btn-danger fw-bold">Deduct Stock</button>
+                <button type="submit" class="btn btn-primary fw-bold">Submit Stock Out</button>
               </form>
             </div>
           </div>
 
-          <!-- MODULE 5: SPOILAGE LOG -->
+          <!-- 5. SPOILAGE LOG -->
           <div id="page-spoilage" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Spoilage & Waste Log</h2>
-            <div class="card p-4 shadow-sm bg-white mb-4" style="max-width: 600px;">
-              <form>
+            <h2 class="fw-bold mb-3">Spoilage & Waste Management</h2>
+            <div class="card p-4 shadow-sm max-w-600">
+              <form onsubmit="handleTransaction(event, 'addSpoilage')">
                 <div class="mb-3">
-                  <label class="form-label">Select Wasted Item</label>
-                  <select class="form-select">
-                    <option>JOL-003 - Yum Burger Buns</option>
-                  </select>
+                  <label class="form-label">Select Item Code</label>
+                  <select class="form-select item-dropdown" id="spoil-code" required></select>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Quantity Spoiled</label>
-                  <input type="number" class="form-control" placeholder="Enter quantity">
+                  <label class="form-label">Quantity Wasted</label>
+                  <input type="number" id="spoil-qty" class="form-control" required min="1">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Reason</label>
-                  <input type="text" class="form-control" placeholder="e.g., Expired, Dropped, Damaged Packaging">
+                  <label class="form-label">Reason for Spoilage</label>
+                  <input type="text" id="spoil-reason" class="form-control" placeholder="e.g., Expired Buns / Damaged Packaging" required>
                 </div>
-                <button type="button" class="btn btn-warning text-dark fw-bold">Log Spoilage</button>
+                <button type="submit" class="btn btn-danger fw-bold">Log Waste / Spoilage</button>
               </form>
             </div>
           </div>
 
-          <!-- MODULE 6: SUPPLIERS -->
+          <!-- 6. SUPPLIERS -->
           <div id="page-suppliers" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Supplier Registry</h2>
+            <h2 class="fw-bold mb-3">Suppliers Registry</h2>
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
-              <table class="table table-bordered">
+              <table class="table table-hover">
                 <thead class="table-dark">
-                  <tr>
-                    <th>Supplier Name</th>
-                    <th>Category Supplied</th>
-                    <th>Contact Person</th>
-                    <th>Contact Number</th>
-                  </tr>
+                  <tr><th>Supplier ID</th><th>Company Name</th><th>Contact Person</th><th>Phone</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>Jollibee Main Commissary</td>
-                    <td>Meat, Patties, Poultry</td>
-                    <td>Logistics Dept</td>
-                    <td>(02) 8888-7000</td>
-                  </tr>
-                  <tr>
-                    <td>San Miguel Foods</td>
-                    <td>Beverages & Flour</td>
-                    <td>Account Rep</td>
-                    <td>(02) 8632-2000</td>
-                  </tr>
-                </tbody>
+                <tbody id="supplier-table-body"></tbody>
               </table>
             </div>
           </div>
 
-          <!-- MODULE 7: REPORTS & AUDIT TRAIL -->
+          <!-- 7. AUDIT LOGS & REPORTS -->
           <div id="page-reports" class="page-content d-none">
-            <h2 class="fw-bold mb-3">Audit Logs & Movement Reports</h2>
+            <h2 class="fw-bold mb-3">System Audit Logs</h2>
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
               <table class="table table-striped">
                 <thead class="table-dark">
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>User</th>
-                    <th>Action</th>
-                    <th>Details</th>
-                  </tr>
+                  <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>2026-09-01 08:30 AM</td>
-                    <td>admin</td>
-                    <td><span class="badge bg-success">LOGIN</span></td>
-                    <td>Manager logged in successfully</td>
-                  </tr>
-                  <tr>
-                    <td>2026-09-01 09:15 AM</td>
-                    <td>crew1</td>
-                    <td><span class="badge bg-primary">STOCK_OUT</span></td>
-                    <td>Deducted 3 Bags of Chickenjoy Premix</td>
-                  </tr>
-                </tbody>
+                <tbody id="audit-table-body"></tbody>
               </table>
             </div>
           </div>
@@ -295,24 +195,138 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyulXxb-7wDTUQIu6J1ofFU6YCGVaQj7FZuumymCSx706mMZDoNEFj__fm6-tKwSIEHmA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye8OdArzI6nrF-eANnG6ezn56w4qUSseOG9PouPfmq5EZK0a1hjoJNdYCw-AMcHMxnBA/exec"; // PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE
+    let currentUser = "";
+    let inventoryCache = [];
 
     function handleLogin(e) {
       e.preventDefault();
-      document.getElementById('login-section').classList.add('d-none');
-      document.getElementById('app-section').classList.remove('d-none');
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "login", username: user, password: pass })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          currentUser = user;
+          document.getElementById('login-section').classList.add('d-none');
+          document.getElementById('app-section').classList.remove('d-none');
+          loadInventory();
+        } else {
+          alert(res.message);
+        }
+      });
+    }
+
+    function loadInventory() {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getInventory" })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          inventoryCache = res.data;
+          renderInventoryTable(res.data);
+          populateDropdowns(res.data);
+          updateDashboard(res.data);
+        }
+      });
+    }
+
+    function renderInventoryTable(data) {
+      const tbody = document.getElementById('inventory-table-body');
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${row[0]}</td>
+            <td>${row[1]}</td>
+            <td>${row[2]}</td>
+            <td>${row[3]}</td>
+            <td>${row[4]}</td>
+            <td>${row[5]}</td>
+            <td><span class="badge ${row[6] === 'Low Stock' ? 'bg-danger' : 'bg-success'}">${row[6]}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    function populateDropdowns(data) {
+      document.querySelectorAll('.item-dropdown').forEach(select => {
+        select.innerHTML = "<option value=''>-- Select Item --</option>";
+        data.forEach(row => {
+          select.innerHTML += `<option value="${row[0]}">${row[0]} - ${row[1]}</option>`;
+        });
+      });
+    }
+
+    function updateDashboard(data) {
+      document.getElementById('dash-total-items').innerText = data.length;
+      const lowStockCount = data.filter(row => row[6] === 'Low Stock').length;
+      document.getElementById('dash-low-stock').innerText = lowStockCount;
+    }
+
+    function handleTransaction(e, actionType) {
+      e.preventDefault();
+      let payload = { action: actionType, user: currentUser };
+
+      if (actionType === 'addStockIn') {
+        payload.data = { code: document.getElementById('in-code').value, qty: document.getElementById('in-qty').value, supplier: document.getElementById('in-supplier').value, user: currentUser };
+      } else if (actionType === 'addStockOut') {
+        payload.data = { code: document.getElementById('out-code').value, qty: document.getElementById('out-qty').value, reason: document.getElementById('out-reason').value, user: currentUser };
+      } else if (actionType === 'addSpoilage') {
+        payload.data = { code: document.getElementById('spoil-code').value, qty: document.getElementById('spoil-qty').value, reason: document.getElementById('spoil-reason').value, user: currentUser };
+      }
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert(res.message);
+        e.target.reset();
+        loadInventory();
+      });
+    }
+
+    function loadSuppliers() {
+      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getSuppliers" }) })
+      .then(res => res.json())
+      .then(res => {
+        const tbody = document.getElementById('supplier-table-body');
+        tbody.innerHTML = "";
+        res.data.forEach(row => {
+          tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
+        });
+      });
+    }
+
+    function loadReports() {
+      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getReports" }) })
+      .then(res => res.json())
+      .then(res => {
+        const tbody = document.getElementById('audit-table-body');
+        tbody.innerHTML = "";
+        res.data.forEach(row => {
+          tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
+        });
+      });
     }
 
     function switchPage(pageId, element) {
-      // Itatago lahat ng modules
       document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
-      // Aalisin ang highlight sa dating active sidebar button
       document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
       
-      // Ipakikita ang napiling module at Highlight sa menu
       document.getElementById('page-' + pageId).classList.remove('d-none');
-      element.classList.active = true;
       element.classList.add('active');
+
+      if (pageId === 'suppliers') loadSuppliers();
+      if (pageId === 'reports') loadReports();
     }
 
     function logout() {
