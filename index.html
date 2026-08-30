@@ -577,7 +577,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYIE4rjvv-1Pv_dP2-0zt3ig1k9Wa7NpU5DIjny22EuwPmIVN3NX76iYkPzKEbGJvq_g/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyutSr8XWbwlRzpRaGlExAtxQSIPKf0Jx_frXVKmgcT4zn0hzKInZbe6AzBB2SGuuTmPw/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -603,11 +603,36 @@ function closeModal(id){ $(id).classList.remove('open'); }
 async function api(action, data={}){
   try{
     const payload = { action, token: SESSION?.token||'', ...data };
-    const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
-    const res = await fetch(url, { method:'GET', redirect:'follow' });
-    const text = await res.text();
-    const json = JSON.parse(text);
-    return json;
+    const url = SCRIPT_URL 
+      + '?payload=' + encodeURIComponent(JSON.stringify(payload))
+      + '&callback=cb_' + Date.now();
+    
+    return new Promise((resolve) => {
+      const cbName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      window[cbName] = function(data) {
+        delete window[cbName];
+        document.getElementById('jsonp_' + cbName)?.remove();
+        resolve(data);
+      };
+      const script = document.createElement('script');
+      script.id = 'jsonp_' + cbName;
+      script.src = SCRIPT_URL 
+        + '?payload=' + encodeURIComponent(JSON.stringify(payload))
+        + '&callback=' + cbName;
+      script.onerror = () => {
+        delete window[cbName];
+        script.remove();
+        resolve({success:false, error:'Network error - check Apps Script deployment'});
+      };
+      document.head.appendChild(script);
+      setTimeout(() => {
+        if(window[cbName]){
+          delete window[cbName];
+          script.remove();
+          resolve({success:false, error:'Request timeout'});
+        }
+      }, 15000);
+    });
   }catch(e){ console.error('API Error:', e); return {success:false,error:e.message}; }
 }
 
