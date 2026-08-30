@@ -577,7 +577,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz22gkEbCRIYHGXv1EzgNCxBSiF2GdGEeNIXnq5IINhcKBaCTsrvazEVXroPPLQTnA1GA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYIE4rjvv-1Pv_dP2-0zt3ig1k9Wa7NpU5DIjny22EuwPmIVN3NX76iYkPzKEbGJvq_g/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -602,10 +602,13 @@ function closeModal(id){ $(id).classList.remove('open'); }
 /* ── API ── */
 async function api(action, data={}){
   try{
-    const body = JSON.stringify({ action, token: SESSION?.token||'', ...data });
-    const res  = await fetch(SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'text/plain'}, body });
-    return await res.json();
-  }catch(e){ console.error(e); return {success:false,error:e.message}; }
+    const payload = { action, token: SESSION?.token||'', ...data };
+    const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    const res = await fetch(url, { method:'GET', redirect:'follow' });
+    const text = await res.text();
+    const json = JSON.parse(text);
+    return json;
+  }catch(e){ console.error('API Error:', e); return {success:false,error:e.message}; }
 }
 
 /* ══════════════════════════════════════════════════
