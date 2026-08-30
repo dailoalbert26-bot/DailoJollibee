@@ -19,163 +19,379 @@
     .nav-active { background-color: #FEF2F2 !important; color: #E31837 !important; font-weight: 700 !important; border-left: 4px solid #E31837; }
   </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-800">
+<body class="bg-gray-100 font-sans antialiased text-gray-800 min-h-screen">
 
-  <!-- LOGIN SCREEN -->
-  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-jbRed px-4">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 relative overflow-hidden">
-      <div class="absolute top-0 left-0 w-full h-2 bg-jbYellow"></div>
+  <!-- ========================================== -->
+  <!-- 1. AUTHENTICATION PORTAL (MODAL)           -->
+  <!-- ========================================== -->
+  <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-jbRed p-4 overflow-y-auto">
+    <div id="auth-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-6 relative">
       
-      <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-jbYellow text-jbRed rounded-full text-3xl mb-2 font-black shadow-md">J</div>
-        <h2 class="text-2xl font-bold text-gray-800">Jollibee Store Inventory</h2>
+      <!-- BRANDING HEADER -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-jbYellow text-jbRed rounded-2xl text-3xl font-black shadow-md">J</div>
+        <h2 class="text-2xl font-extrabold text-gray-800">Jollibee Store Inventory</h2>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Store Operations Management System</p>
       </div>
 
-      <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs"></div>
+      <!-- ALERTS -->
+      <div id="auth-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg text-xs font-semibold text-center"></div>
+      <div id="auth-success" class="hidden bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded-lg text-xs font-semibold text-center"></div>
 
-      <!-- STEP 1: LOGIN FORM -->
-      <form id="login-form" onsubmit="handleRequestOTP(event)" class="space-y-4">
+      <!-- VIEW 1: MAIN PORTAL SELECTION MENU -->
+      <div id="view-menu" class="space-y-3">
+        <button onclick="switchAuthView('admin')" class="w-full bg-jbRed text-white py-3.5 px-4 rounded-xl font-bold text-sm hover:bg-jbDarkRed transition shadow-md flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>LOGIN AS ADMIN</span>
+        </button>
+        <button onclick="switchAuthView('staff')" class="w-full bg-white border-2 border-gray-200 text-gray-700 py-3.5 px-4 rounded-xl font-bold text-sm hover:bg-gray-50 transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-user-gear"></i>
+          <span>STAFF LOGIN</span>
+        </button>
+        <button onclick="switchAuthView('register')" class="w-full bg-gray-900 text-white py-3.5 px-4 rounded-xl font-bold text-sm hover:bg-black transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-id-card"></i>
+          <span>CREATE STAFF ACCOUNT</span>
+        </button>
+      </div>
+
+      <!-- VIEW 2: ADMIN LOGIN -->
+      <form id="view-admin" onsubmit="handleRequestOTP(event, 'Store Manager')" class="hidden space-y-4">
+        <div class="border-b pb-2">
+          <h3 class="font-bold text-gray-800 text-sm">Admin Security Login</h3>
+        </div>
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Username / ID</label>
-          <input type="text" id="login-user" required class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="e.g. manager">
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Admin Gmail</label>
+          <input type="email" id="admin-email" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="admin@gmail.com">
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
-          <input type="password" id="login-pass" required class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="••••••••">
+          <input type="password" id="admin-pass" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="••••••••">
         </div>
-        <button type="submit" id="login-btn" class="w-full bg-jbRed text-white py-3 rounded-lg font-bold text-sm hover:bg-jbDarkRed transition shadow-lg flex justify-center items-center">
-          <span>CONTINUE TO VERIFICATION</span>
-        </button>
+        <button type="submit" class="auth-btn w-full bg-jbRed text-white py-3 rounded-xl font-bold text-sm hover:bg-jbDarkRed transition shadow-md">SEND OTP</button>
+        <button type="button" onclick="switchAuthView('menu')" class="w-full bg-gray-100 text-gray-600 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-200 transition">BACK</button>
       </form>
 
-      <!-- STEP 2: GMAIL OTP FORM -->
-      <form id="otp-form" onsubmit="handleVerifyOTP(event)" class="hidden space-y-4">
-        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-xs">
-          An OTP verification code was sent to your registered Gmail address: <strong id="otp-email-display"></strong>
+      <!-- VIEW 3: STAFF LOGIN -->
+      <form id="view-staff" onsubmit="handleRequestOTP(event, 'Inventory Crew')" class="hidden space-y-4">
+        <div class="border-b pb-2">
+          <h3 class="font-bold text-gray-800 text-sm">Staff Portal Login</h3>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Registered Gmail</label>
+          <input type="email" id="staff-email" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="staff@gmail.com">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
+          <input type="password" id="staff-pass" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="••••••••">
+        </div>
+        <button type="submit" class="auth-btn w-full bg-jbRed text-white py-3 rounded-xl font-bold text-sm hover:bg-jbDarkRed transition shadow-md">SEND OTP</button>
+        <button type="button" onclick="switchAuthView('menu')" class="w-full bg-gray-100 text-gray-600 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-200 transition">BACK</button>
+      </form>
+
+      <!-- VIEW 4: CREATE ACCOUNT -->
+      <form id="view-register" onsubmit="handleRegister(event)" class="hidden space-y-4">
+        <div class="border-b pb-2">
+          <h3 class="font-bold text-gray-800 text-sm">Register Staff Account</h3>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
+          <input type="text" id="reg-name" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="Juan Dela Cruz">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Gmail Address</label>
+          <input type="email" id="reg-email" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="juan@gmail.com">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
+          <input type="password" id="reg-pass" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="••••••••">
+        </div>
+        <button type="submit" class="auth-btn w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition shadow-md">CREATE ACCOUNT</button>
+        <button type="button" onclick="switchAuthView('menu')" class="w-full bg-gray-100 text-gray-600 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-200 transition">BACK</button>
+      </form>
+
+      <!-- VIEW 5: GMAIL OTP VERIFICATION -->
+      <form id="view-otp" onsubmit="handleVerifyOTP(event)" class="hidden space-y-4">
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-xl text-xs">
+          Verification code sent to: <strong id="otp-email-lbl"></strong>
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Enter 6-Digit OTP Code</label>
-          <input type="text" id="login-otp" required maxlength="6" class="w-full text-center tracking-widest text-lg font-bold px-4 py-2 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none" placeholder="123456">
+          <input type="text" id="otp-input" required maxlength="6" class="w-full text-center tracking-widest text-xl font-extrabold px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-jbRed focus:outline-none" placeholder="123456">
         </div>
-        <button type="submit" id="otp-btn" class="w-full bg-jbRed text-white py-3 rounded-lg font-bold text-sm hover:bg-jbDarkRed transition shadow-lg">
-          VERIFY & LOGIN
-        </button>
+        <button type="submit" class="auth-btn w-full bg-jbRed text-white py-3 rounded-xl font-bold text-sm hover:bg-jbDarkRed transition shadow-md">VERIFY & ENTER</button>
       </form>
+
     </div>
   </div>
 
-  <!-- MAIN APP CONTAINER -->
+  <!-- ========================================== -->
+  <!-- 2. MAIN APPLICATION DASHBOARD SYSTEM       -->
+  <!-- ========================================== -->
   <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
-    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-white border-r min-h-screen fixed md:sticky top-0 h-screen z-30">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 bg-white border-r min-h-screen sticky top-0 h-screen z-30 flex flex-col">
       <div class="p-5 border-b bg-jbRed text-white flex items-center space-x-3">
-        <div class="bg-jbYellow text-jbRed font-bold rounded-full w-10 h-10 flex items-center justify-center text-xl">J</div>
+        <div class="bg-jbYellow text-jbRed font-extrabold rounded-2xl w-10 h-10 flex items-center justify-center text-xl shadow">J</div>
         <div>
           <h1 class="font-bold text-base leading-tight">Jollibee Store</h1>
-          <p class="text-xs text-jbYellow font-semibold">Inventory System</p>
+          <p class="text-[10px] text-jbYellow font-bold uppercase">Inventory Management</p>
         </div>
       </div>
+      
       <nav class="flex-1 p-3 space-y-1">
-        <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600">
-          <i class="fa-solid fa-chart-pie w-5"></i><span>1. Dashboard</span>
+        <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn nav-active w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-xl text-gray-600 hover:bg-gray-100">
+          <i class="fa-solid fa-chart-pie w-5 text-center"></i><span>Dashboard</span>
         </button>
-        <button onclick="navigate('ingredients')" id="nav-ingredients" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600">
-          <i class="fa-solid fa-drumstick-bite w-5"></i><span>2. Raw Ingredients</span>
+        <button onclick="navigate('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-xl text-gray-600 hover:bg-gray-100">
+          <i class="fa-solid fa-boxes-stacked w-5 text-center"></i><span>Inventory Stock</span>
+        </button>
+        <button onclick="navigate('movements')" id="nav-movements" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-xl text-gray-600 hover:bg-gray-100">
+          <i class="fa-solid fa-right-left w-5 text-center"></i><span>Stock Movements</span>
+        </button>
+        <button onclick="navigate('waste')" id="nav-waste" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-xl text-gray-600 hover:bg-gray-100">
+          <i class="fa-solid fa-trash-can w-5 text-center"></i><span>Waste Tracking</span>
         </button>
       </nav>
-      <div class="p-3 border-t bg-gray-50 flex items-center justify-between">
-        <div>
-          <p id="user-display-name" class="text-xs font-bold text-gray-800">Manager</p>
-          <p id="user-display-role" class="text-[10px] text-gray-500 uppercase">Admin</p>
+
+      <div class="p-4 border-t bg-gray-50 flex items-center justify-between">
+        <div class="truncate">
+          <p id="user-display-name" class="text-xs font-bold text-gray-800 truncate">Manager</p>
+          <p id="user-display-role" class="text-[10px] text-gray-500 uppercase font-semibold">Admin</p>
         </div>
-        <button onclick="location.reload()" class="text-gray-400 hover:text-jbRed p-1.5"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <button onclick="location.reload()" class="text-gray-400 hover:text-jbRed p-2 transition" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </aside>
 
-    <main class="flex-1 p-6">
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-6 space-y-6">
+      
+      <!-- PAGE 1: DASHBOARD -->
       <section id="sec-dashboard" class="space-y-6">
-        <h2 class="text-xl font-extrabold text-gray-800">Store Dashboard Overview</h2>
-        <div class="bg-white p-4 rounded-xl border shadow-sm">
-          <h3 class="font-bold text-sm mb-3">Critical Stock Alerts</h3>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-extrabold text-gray-800">Store Dashboard</h2>
+          <button onclick="loadSystemData()" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-black transition"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Total Unique SKUs</p>
+            <h3 id="stat-sku" class="text-2xl font-black text-gray-800 mt-1">0</h3>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Low Stock Alerts</p>
+            <h3 id="stat-low" class="text-2xl font-black text-jbRed mt-1">0</h3>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border shadow-sm">
+            <p class="text-xs font-bold text-gray-400 uppercase">Recent Movements</p>
+            <h3 id="stat-movements" class="text-2xl font-black text-gray-800 mt-1">0</h3>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
+          <h3 class="font-bold text-sm text-gray-800">Low Stock Alert Items</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 uppercase font-bold border-b text-gray-600">
+                <tr><th class="p-3">SKU</th><th class="p-3">Item Name</th><th class="p-3">Category</th><th class="p-3">Stock Level</th></tr>
+              </thead>
+              <tbody id="tbl-critical-body" class="divide-y divide-gray-100">
+                <tr><td colspan="4" class="p-4 text-center text-gray-400">Loading data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 2: INVENTORY STOCK -->
+      <section id="sec-inventory" class="hidden space-y-6">
+        <h2 class="text-xl font-extrabold text-gray-800">Inventory Stock List</h2>
+        <div class="bg-white p-5 rounded-2xl border shadow-sm overflow-x-auto">
           <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 uppercase font-bold border-b">
-              <tr><th class="p-3">Item Description</th><th class="p-3">Category</th><th class="p-3">Stock Level</th></tr>
+            <thead class="bg-gray-50 uppercase font-bold border-b text-gray-600">
+              <tr>
+                <th class="p-3">SKU</th><th class="p-3">Item Name</th><th class="p-3">Category</th>
+                <th class="p-3">Unit</th><th class="p-3">Qty</th><th class="p-3">Min Level</th><th class="p-3">Unit Price</th>
+              </tr>
             </thead>
-            <tbody id="tbl-critical-body" class="divide-y divide-gray-100">
-              <tr><td colspan="3" class="p-4 text-center text-gray-400">Loading system data...</td></tr>
+            <tbody id="tbl-inventory-body" class="divide-y divide-gray-100">
+              <tr><td colspan="7" class="p-4 text-center text-gray-400">Loading inventory...</td></tr>
             </tbody>
           </table>
         </div>
       </section>
+
+      <!-- PAGE 3: MOVEMENTS -->
+      <section id="sec-movements" class="hidden space-y-6">
+        <h2 class="text-xl font-extrabold text-gray-800">Stock Movements Log</h2>
+        <div class="bg-white p-5 rounded-2xl border shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50 uppercase font-bold border-b text-gray-600">
+              <tr><th class="p-3">Timestamp</th><th class="p-3">SKU</th><th class="p-3">Item Name</th><th class="p-3">Type</th><th class="p-3">Qty</th><th class="p-3">Logged By</th></tr>
+            </thead>
+            <tbody id="tbl-movements-body" class="divide-y divide-gray-100">
+              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading movement logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE 4: WASTE TRACKING -->
+      <section id="sec-waste" class="hidden space-y-6">
+        <h2 class="text-xl font-extrabold text-gray-800">Waste & Damaged Tracking</h2>
+        <div class="bg-white p-5 rounded-2xl border shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50 uppercase font-bold border-b text-gray-600">
+              <tr><th class="p-3">Timestamp</th><th class="p-3">SKU</th><th class="p-3">Item Name</th><th class="p-3">Qty</th><th class="p-3">Reason</th><th class="p-3">Logged By</th></tr>
+            </thead>
+            <tbody id="tbl-waste-body" class="divide-y divide-gray-100">
+              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading waste logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
     </main>
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1zF4WHOOdk9tG8vYw8Q1qinpWzNSiqTeKk4cNsUSx9DWpzp8jniz8wR8EccdTl-qs4A/exec";
-    let activeUser = "";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMsY5K_r7l608zoKWZnzVr2XigKU3IbyuSM4M27dQS_gf-90Xe1WQFeaKyPXkAaPNeDQ/exec";
+    let activeEmail = "";
+    let currentUser = null;
 
-    async function handleRequestOTP(e) {
+    function switchAuthView(view) {
+      document.getElementById('auth-error').classList.add('hidden');
+      document.getElementById('auth-success').classList.add('hidden');
+      ['menu', 'admin', 'staff', 'register', 'otp'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+      });
+      document.getElementById(`view-${view}`).classList.remove('hidden');
+    }
+
+    async function handleRegister(e) {
       e.preventDefault();
-      const user = document.getElementById('login-user').value.trim();
-      const pass = document.getElementById('login-pass').value.trim();
-      const errBox = document.getElementById('login-error');
-      const btn = document.getElementById('login-btn');
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value.trim();
 
-      errBox.classList.add('hidden');
-      btn.innerText = "SENDING OTP TO GMAIL...";
-      btn.disabled = true;
-
+      toggleAuthLoading(true, "Registering...");
       try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=requestOTP&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=register&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(pass)}`);
         const data = await res.json();
-
-        if (data.status === "OTP_SENT") {
-          activeUser = user;
-          document.getElementById('otp-email-display').innerText = data.email;
-          document.getElementById('login-form').classList.add('hidden');
-          document.getElementById('otp-form').classList.remove('hidden');
+        if (data.status === "SUCCESS") {
+          showAuthMsg("success", "Account created successfully! You can now login.");
+          switchAuthView('menu');
         } else {
-          errBox.innerText = data.message;
-          errBox.classList.remove('hidden');
+          showAuthMsg("error", data.message);
         }
       } catch (err) {
-        errBox.innerText = "Error requesting security OTP.";
-        errBox.classList.remove('hidden');
+        showAuthMsg("error", "Error connecting to backend script.");
       } finally {
-        btn.innerText = "CONTINUE TO VERIFICATION";
-        btn.disabled = false;
+        toggleAuthLoading(false, "CREATE ACCOUNT");
+      }
+    }
+
+    async function handleRequestOTP(e, role) {
+      e.preventDefault();
+      const email = document.getElementById(role === 'Store Manager' ? 'admin-email' : 'staff-email').value.trim();
+      const pass = document.getElementById(role === 'Store Manager' ? 'admin-pass' : 'staff-pass').value.trim();
+
+      toggleAuthLoading(true, "Sending OTP...");
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=requestOTP&email=${encodeURIComponent(email)}&password=${encodeURIComponent(pass)}&role=${encodeURIComponent(role)}`);
+        const data = await res.json();
+        if (data.status === "OTP_SENT") {
+          activeEmail = email;
+          document.getElementById('otp-email-lbl').innerText = email;
+          switchAuthView('otp');
+        } else {
+          showAuthMsg("error", data.message);
+        }
+      } catch (err) {
+        showAuthMsg("error", "Failed to send OTP code to Gmail.");
+      } finally {
+        toggleAuthLoading(false, "SEND OTP");
       }
     }
 
     async function handleVerifyOTP(e) {
       e.preventDefault();
-      const otp = document.getElementById('login-otp').value.trim();
-      const errBox = document.getElementById('login-error');
-      const btn = document.getElementById('otp-btn');
+      const otp = document.getElementById('otp-input').value.trim();
 
-      errBox.classList.add('hidden');
-      btn.innerText = "VERIFYING...";
-      btn.disabled = true;
-
+      toggleAuthLoading(true, "Verifying...");
       try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=verifyOTP&username=${encodeURIComponent(activeUser)}&otp=${encodeURIComponent(otp)}`);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=verifyOTP&email=${encodeURIComponent(activeEmail)}&otp=${encodeURIComponent(otp)}`);
         const data = await res.json();
-
         if (data.status === "SUCCESS") {
-          document.getElementById('login-screen').classList.add('hidden');
+          currentUser = data.user;
+          document.getElementById('user-display-name').innerText = currentUser.name;
+          document.getElementById('user-display-role').innerText = currentUser.role;
+          
+          document.getElementById('auth-screen').classList.add('hidden');
           document.getElementById('app-screen').classList.remove('hidden');
-          document.getElementById('user-display-name').innerText = data.user.username.toUpperCase();
-          document.getElementById('user-display-role').innerText = data.user.role;
+          
+          loadSystemData();
         } else {
-          errBox.innerText = data.message;
-          errBox.classList.remove('hidden');
+          showAuthMsg("error", data.message);
         }
       } catch (err) {
-        errBox.innerText = "OTP verification failed.";
-        errBox.classList.remove('hidden');
+        showAuthMsg("error", "OTP Verification failed.");
       } finally {
-        btn.innerText = "VERIFY & LOGIN";
-        btn.disabled = false;
+        toggleAuthLoading(false, "VERIFY & ENTER");
       }
+    }
+
+    async function loadSystemData() {
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
+        const data = await res.json();
+        
+        document.getElementById('stat-sku').innerText = data.inventory.length;
+        const lowStock = data.inventory.filter(i => Number(i.qty) <= Number(i.min));
+        document.getElementById('stat-low').innerText = lowStock.length;
+        document.getElementById('stat-movements').innerText = data.movements.length;
+
+        const critBody = document.getElementById('tbl-critical-body');
+        critBody.innerHTML = lowStock.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-gray-400">All stocks at normal levels.</td></tr>' :
+          lowStock.map(i => `<tr class="bg-red-50 font-semibold text-red-700"><td class="p-3">${i.sku}</td><td class="p-3">${i.name}</td><td class="p-3">${i.category}</td><td class="p-3">${i.qty} ${i.unit} (Min: ${i.min})</td></tr>`).join('');
+
+        document.getElementById('tbl-inventory-body').innerHTML = data.inventory.map(i => 
+          `<tr><td class="p-3 font-bold">${i.sku}</td><td class="p-3">${i.name}</td><td class="p-3">${i.category}</td><td class="p-3">${i.unit}</td><td class="p-3 font-bold">${i.qty}</td><td class="p-3">${i.min}</td><td class="p-3">₱${Number(i.cost).toFixed(2)}</td></tr>`
+        ).join('');
+
+        document.getElementById('tbl-movements-body').innerHTML = data.movements.map(m => 
+          `<tr><td class="p-3 text-gray-500">${m.timestamp}</td><td class="p-3 font-bold">${m.sku}</td><td class="p-3">${m.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.type === 'Stock In' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${m.type}</span></td><td class="p-3 font-bold">${m.qty}</td><td class="p-3">${m.user}</td></tr>`
+        ).join('');
+
+        document.getElementById('tbl-waste-body').innerHTML = data.waste.map(w => 
+          `<tr><td class="p-3 text-gray-500">${w.timestamp}</td><td class="p-3 font-bold">${w.sku}</td><td class="p-3">${w.name}</td><td class="p-3 font-bold text-jbRed">${w.qty}</td><td class="p-3">${w.reason}</td><td class="p-3">${w.user}</td></tr>`
+        ).join('');
+
+      } catch (err) {
+        console.error("Error loading system data", err);
+      }
+    }
+
+    function navigate(sec) {
+      ['dashboard', 'inventory', 'movements', 'waste'].forEach(s => {
+        document.getElementById(`sec-${s}`).classList.add('hidden');
+        document.getElementById(`nav-${s}`).classList.remove('nav-active');
+      });
+      document.getElementById(`sec-${sec}`).classList.remove('hidden');
+      document.getElementById(`nav-${sec}`).classList.add('nav-active');
+    }
+
+    function showAuthMsg(type, txt) {
+      const el = document.getElementById(`auth-${type}`);
+      el.innerText = txt;
+      el.classList.remove('hidden');
+    }
+
+    function toggleAuthLoading(isLoading, text) {
+      document.querySelectorAll('.auth-btn').forEach(btn => {
+        btn.innerText = text;
+        btn.disabled = isLoading;
+      });
     }
   </script>
 </body>
