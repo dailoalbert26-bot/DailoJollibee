@@ -667,10 +667,26 @@ async function doLogin(){
   const u=$('lgUser').value.trim(), p=$('lgPass').value.trim();
   if(!u||!p){ showErr('Please enter username and password.'); return; }
   const btn=$('lgBtn'); btn.innerHTML='<span class="spin"></span> Signing in…'; btn.disabled=true;
-  const r = await api('login',{username:u,password:p});
+  
+  let r;
+  try {
+    r = await api('login',{username:u,password:p});
+  } catch(e) {
+    btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled=false;
+    showErr('Error: ' + e.message);
+    return;
+  }
+  
   btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled=false;
-  if(r.success){ SESSION=r.user; localStorage.setItem('JIS_sess',JSON.stringify(r.user)); bootApp(); }
-  else showErr(r.error||'Invalid username or password.');
+  
+  if(r.success){ 
+    SESSION=r.user; 
+    localStorage.setItem('JIS_sess',JSON.stringify(r.user)); 
+    bootApp(); 
+  } else {
+    // Show full error details for debugging
+    showErr((r.error||'Login failed') + ' [' + JSON.stringify(r).substring(0,80) + ']');
+  }
 }
 
 function showErr(msg){ $('lgErrMsg').textContent=msg; $('lgErr').style.display='flex'; setTimeout(()=>$('lgErr').style.display='none',4000); }
