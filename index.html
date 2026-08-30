@@ -9,7 +9,7 @@
   <style>
     body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .sidebar { min-height: 100vh; background-color: #212529; color: white; }
-    .sidebar .nav-link { color: #adb5bd; margin-bottom: 5px; }
+    .sidebar .nav-link { color: #adb5bd; margin-bottom: 5px; cursor: pointer; }
     .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: #d32f2f; border-radius: 5px; }
     .card-summary { border-left: 5px solid #d32f2f; }
   </style>
@@ -51,37 +51,37 @@
           <hr>
           <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
-              <a href="#" class="nav-link active" onclick="switchPage('dashboard', this)">
+              <a class="nav-link active" onclick="switchPage('dashboard', this)">
                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('inventory', this)">
+              <a class="nav-link" onclick="switchPage('inventory', this)">
                 <i class="bi bi-box-seam me-2"></i> Stock Inventory
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('stock-in', this)">
+              <a class="nav-link" onclick="switchPage('stock-in', this)">
                 <i class="bi bi-arrow-down-right-square me-2"></i> Stock In
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('stock-out', this)">
+              <a class="nav-link" onclick="switchPage('stock-out', this)">
                 <i class="bi bi-arrow-up-left-square me-2"></i> Stock Out
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('spoilage', this)">
+              <a class="nav-link" onclick="switchPage('spoilage', this)">
                 <i class="bi bi-trash me-2"></i> Spoilage Log
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('suppliers', this)">
+              <a class="nav-link" onclick="switchPage('suppliers', this)">
                 <i class="bi bi-truck me-2"></i> Suppliers
               </a>
             </li>
             <li>
-              <a href="#" class="nav-link" onclick="switchPage('reports', this)">
+              <a class="nav-link" onclick="switchPage('reports', this)">
                 <i class="bi bi-file-earmark-bar-graph me-2"></i> Reports & Logs
               </a>
             </li>
@@ -95,7 +95,7 @@
         <!-- MAIN CONTENT AREA -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
           
-          <!-- FEATURE 1: DASHBOARD -->
+          <!-- MODULE 1: DASHBOARD -->
           <div id="page-dashboard" class="page-content">
             <h2 class="fw-bold mb-4">Store Overview</h2>
             <div class="row g-3 mb-4">
@@ -120,7 +120,7 @@
             </div>
           </div>
 
-          <!-- FEATURE 2: STOCK INVENTORY -->
+          <!-- MODULE 2: STOCK INVENTORY -->
           <div id="page-inventory" class="page-content d-none">
             <h2 class="fw-bold mb-3">Stock Inventory</h2>
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
@@ -136,18 +136,158 @@
                   </tr>
                 </thead>
                 <tbody id="inventory-table-body">
-                  <!-- Data loaded dynamically from Google Sheets -->
+                  <tr>
+                    <td>JOL-001</td>
+                    <td>Chickenjoy Premix Flour</td>
+                    <td>Dry Goods</td>
+                    <td>15</td>
+                    <td>Bags</td>
+                    <td><span class="badge bg-success">In Stock</span></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- OTHER FEATURES PLACEHOLDERS -->
-          <div id="page-stock-in" class="page-content d-none"><h2>Stock In (Receiving)</h2></div>
-          <div id="page-stock-out" class="page-content d-none"><h2>Stock Out (Usage)</h2></div>
-          <div id="page-spoilage" class="page-content d-none"><h2>Spoilage & Waste Log</h2></div>
-          <div id="page-suppliers" class="page-content d-none"><h2>Suppliers & Commissary</h2></div>
-          <div id="page-reports" class="page-content d-none"><h2>Reports & Audit Trail</h2></div>
+          <!-- MODULE 3: STOCK IN (RECEIVING) -->
+          <div id="page-stock-in" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Stock In (Receiving Supply)</h2>
+            <div class="card p-4 shadow-sm bg-white" style="max-width: 600px;">
+              <form>
+                <div class="mb-3">
+                  <label class="form-label">Select Item</label>
+                  <select class="form-select">
+                    <option>JOL-001 - Chickenjoy Premix Flour</option>
+                    <option>JOL-002 - Burger Patties (100s)</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Quantity Received</label>
+                  <input type="number" class="form-control" placeholder="Enter quantity">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Delivery Receipt (DR) Number</label>
+                  <input type="text" class="form-control" placeholder="DR-XXXXXX">
+                </div>
+                <button type="button" class="btn btn-danger fw-bold">Add to Stock</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- MODULE 4: STOCK OUT (USAGE) -->
+          <div id="page-stock-out" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Stock Out (Kitchen Usage)</h2>
+            <div class="card p-4 shadow-sm bg-white" style="max-width: 600px;">
+              <form>
+                <div class="mb-3">
+                  <label class="form-label">Select Item</label>
+                  <select class="form-select">
+                    <option>JOL-001 - Chickenjoy Premix Flour</option>
+                    <option>JOL-002 - Burger Patties (100s)</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Quantity Used</label>
+                  <input type="number" class="form-control" placeholder="Enter quantity used">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Shift / Purpose</label>
+                  <select class="form-select">
+                    <option>Opening Shift Usage</option>
+                    <option>Mid Shift Usage</option>
+                    <option>Closing Shift Usage</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-danger fw-bold">Deduct Stock</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- MODULE 5: SPOILAGE LOG -->
+          <div id="page-spoilage" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Spoilage & Waste Log</h2>
+            <div class="card p-4 shadow-sm bg-white mb-4" style="max-width: 600px;">
+              <form>
+                <div class="mb-3">
+                  <label class="form-label">Select Wasted Item</label>
+                  <select class="form-select">
+                    <option>JOL-003 - Yum Burger Buns</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Quantity Spoiled</label>
+                  <input type="number" class="form-control" placeholder="Enter quantity">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Reason</label>
+                  <input type="text" class="form-control" placeholder="e.g., Expired, Dropped, Damaged Packaging">
+                </div>
+                <button type="button" class="btn btn-warning text-dark fw-bold">Log Spoilage</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- MODULE 6: SUPPLIERS -->
+          <div id="page-suppliers" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Supplier Registry</h2>
+            <div class="table-responsive bg-white p-3 rounded shadow-sm">
+              <table class="table table-bordered">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Supplier Name</th>
+                    <th>Category Supplied</th>
+                    <th>Contact Person</th>
+                    <th>Contact Number</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Jollibee Main Commissary</td>
+                    <td>Meat, Patties, Poultry</td>
+                    <td>Logistics Dept</td>
+                    <td>(02) 8888-7000</td>
+                  </tr>
+                  <tr>
+                    <td>San Miguel Foods</td>
+                    <td>Beverages & Flour</td>
+                    <td>Account Rep</td>
+                    <td>(02) 8632-2000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MODULE 7: REPORTS & AUDIT TRAIL -->
+          <div id="page-reports" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Audit Logs & Movement Reports</h2>
+            <div class="table-responsive bg-white p-3 rounded shadow-sm">
+              <table class="table table-striped">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>2026-09-01 08:30 AM</td>
+                    <td>admin</td>
+                    <td><span class="badge bg-success">LOGIN</span></td>
+                    <td>Manager logged in successfully</td>
+                  </tr>
+                  <tr>
+                    <td>2026-09-01 09:15 AM</td>
+                    <td>crew1</td>
+                    <td><span class="badge bg-primary">STOCK_OUT</span></td>
+                    <td>Deducted 3 Bags of Chickenjoy Premix</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
         </main>
       </div>
@@ -155,74 +295,23 @@
   </div>
 
   <script>
-    // ILAGAY DITO ANG APPS SCRIPT WEB APP URL MO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyulXxb-7wDTUQIu6J1ofFU6YCGVaQj7FZuumymCSx706mMZDoNEFj__fm6-tKwSIEHmA/exec";
 
     function handleLogin(e) {
       e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      const loginBtn = document.getElementById('loginBtn');
-
-      loginBtn.innerText = "Authenticating...";
-      loginBtn.disabled = true;
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "login", username: user, password: pass })
-      })
-      .then(res => res.json())
-      .then(res => {
-        loginBtn.innerText = "Login";
-        loginBtn.disabled = false;
-        if (res.success) {
-          document.getElementById('login-section').classList.add('d-none');
-          document.getElementById('app-section').classList.remove('d-none');
-          loadInventory();
-        } else {
-          const alert = document.getElementById('login-alert');
-          alert.innerText = res.message;
-          alert.classList.remove('d-none');
-        }
-      })
-      .catch(err => {
-        loginBtn.innerText = "Login";
-        loginBtn.disabled = false;
-        alert("Error connecting to database");
-      });
-    }
-
-    function loadInventory() {
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "getInventory" })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          const tbody = document.getElementById('inventory-table-body');
-          tbody.innerHTML = "";
-          res.data.forEach(row => {
-            tbody.innerHTML += `
-              <tr>
-                <td>${row[0]}</td>
-                <td>${row[1]}</td>
-                <td>${row[2]}</td>
-                <td>${row[3]}</td>
-                <td>${row[4]}</td>
-                <td><span class="badge ${row[6] === 'Low Stock' ? 'bg-danger' : 'bg-success'}">${row[6]}</span></td>
-              </tr>
-            `;
-          });
-        }
-      });
+      document.getElementById('login-section').classList.add('d-none');
+      document.getElementById('app-section').classList.remove('d-none');
     }
 
     function switchPage(pageId, element) {
+      // Itatago lahat ng modules
       document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
+      // Aalisin ang highlight sa dating active sidebar button
       document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
       
+      // Ipakikita ang napiling module at Highlight sa menu
       document.getElementById('page-' + pageId).classList.remove('d-none');
+      element.classList.active = true;
       element.classList.add('active');
     }
 
