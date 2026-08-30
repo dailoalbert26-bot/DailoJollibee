@@ -681,7 +681,8 @@ async function doLogin(){
   
   if(r.success){ 
     SESSION=r.user; 
-    localStorage.setItem('JIS_sess',JSON.stringify(r.user)); 
+    try{localStorage.setItem('JIS_sess',JSON.stringify(r.user));}catch(e){}
+    try{sessionStorage.setItem('JIS_sess',JSON.stringify(r.user));}catch(e){}
     bootApp(); 
   } else {
     // Show full error details for debugging
@@ -691,7 +692,14 @@ async function doLogin(){
 
 function showErr(msg){ $('lgErrMsg').textContent=msg; $('lgErr').style.display='flex'; setTimeout(()=>$('lgErr').style.display='none',4000); }
 
-function doLogout(){ SESSION=null; localStorage.removeItem('JIS_sess'); $('app').style.display='none'; $('loginPage').style.display='flex'; $('lgPass').value=''; }
+function doLogout(){ 
+  SESSION=null; 
+  try{localStorage.removeItem('JIS_sess');}catch(e){}
+  try{sessionStorage.removeItem('JIS_sess');}catch(e){}
+  $('app').style.display='none'; 
+  $('loginPage').style.display='flex'; 
+  $('lgPass').value=''; 
+}
 
 function bootApp(){
   $('loginPage').style.display='none';
@@ -700,6 +708,9 @@ function bootApp(){
   $('sbRole').textContent = SESSION.role;
   $('tbAvatar').textContent = (SESSION.name||SESSION.username).charAt(0).toUpperCase();
   if(SESSION.role!=='Admin'){ $('addUsrBtn').style.display='none'; $('usrAdminMsg').style.display='flex'; }
+  // Save to both storages for MIT WebViewer compatibility
+  try{localStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
+  try{sessionStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
   navigate('dashboard');
 }
 
@@ -1089,8 +1100,10 @@ document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>
 
 /* ── AUTO LOGIN FROM SESSION ── */
 window.addEventListener('load',()=>{
-  const s=localStorage.getItem('JIS_sess');
-  if(s){ try{ SESSION=JSON.parse(s); bootApp(); }catch(e){ localStorage.removeItem('JIS_sess'); } }
+  let s = null;
+  try{s=localStorage.getItem('JIS_sess');}catch(e){}
+  if(!s){ try{s=sessionStorage.getItem('JIS_sess');}catch(e){} }
+  if(s){ try{ SESSION=JSON.parse(s); bootApp(); }catch(e){ try{localStorage.removeItem('JIS_sess');}catch(e2){} } }
 });
 </script>
 </body>
