@@ -3,340 +3,232 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jollibee Store Inventory Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Jollibee Inventory System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .sidebar { min-height: 100vh; background-color: #212529; color: white; }
+    .sidebar .nav-link { color: #adb5bd; margin-bottom: 5px; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: #d32f2f; border-radius: 5px; }
+    .card-summary { border-left: 5px solid #d32f2f; }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen">
+<body>
 
-  <!-- AUTHENTICATION CONTAINER -->
-  <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
-    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-      
-      <!-- HEADER -->
-      <div class="bg-red-600 p-6 text-center text-white">
-        <div class="inline-flex items-center justify-center bg-white text-red-600 rounded-full w-12 h-12 font-black text-2xl shadow-md mb-2">J</div>
-        <h2 class="text-xl font-bold tracking-tight">Jollibee Store Inventory</h2>
-        <p class="text-xs text-red-100 mt-0.5">Authorized Access Portal</p>
+  <!-- LOGIN SECTION -->
+  <div id="login-section" class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+      <div class="text-center mb-3">
+        <h3 class="fw-bold text-danger">Jollibee</h3>
+        <p class="text-muted">Inventory System Login</p>
       </div>
-
-      <div class="p-6 space-y-5">
-        <!-- MODE SELECTOR -->
-        <div class="flex bg-gray-100 p-1 rounded-xl text-xs font-semibold">
-          <button id="btn-tab-login" onclick="setAuthTab('login')" class="flex-1 py-2 rounded-lg bg-white shadow-sm text-red-600 transition">Log In</button>
-          <button id="btn-tab-create" onclick="setAuthTab('create')" class="flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-800 transition">Register</button>
+      <div id="login-alert" class="alert alert-danger d-none"></div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" id="username" class="form-control" required placeholder="Enter username">
         </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" required placeholder="Enter password">
+        </div>
+        <button type="submit" id="loginBtn" class="btn btn-danger w-100 fw-bold">Login</button>
+      </form>
+    </div>
+  </div>
 
-        <!-- NOTIFICATION MSG -->
-        <div id="auth-msg" class="hidden p-3 rounded-xl text-xs font-semibold text-center"></div>
+  <!-- MAIN SYSTEM APP -->
+  <div id="app-section" class="d-none">
+    <div class="container-fluid">
+      <div class="row">
+        
+        <!-- SIDEBAR NAVIGATION (7 FEATURES) -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
+          <div class="d-flex align-items-center mb-3 text-white text-decoration-none">
+            <span class="fs-4 fw-bold text-danger">Jollibee<span class="text-white fs-6"> Inv</span></span>
+          </div>
+          <hr>
+          <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a href="#" class="nav-link active" onclick="switchPage('dashboard', this)">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('inventory', this)">
+                <i class="bi bi-box-seam me-2"></i> Stock Inventory
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('stock-in', this)">
+                <i class="bi bi-arrow-down-right-square me-2"></i> Stock In
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('stock-out', this)">
+                <i class="bi bi-arrow-up-left-square me-2"></i> Stock Out
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('spoilage', this)">
+                <i class="bi bi-trash me-2"></i> Spoilage Log
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('suppliers', this)">
+                <i class="bi bi-truck me-2"></i> Suppliers
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link" onclick="switchPage('reports', this)">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i> Reports & Logs
+              </a>
+            </li>
+          </ul>
+          <hr>
+          <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </nav>
 
-        <!-- LOGIN FORM -->
-        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">Store Email</label>
-            <input type="email" id="login-email" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">4-Digit Security PIN</label>
-            <input type="password" id="login-pin" maxlength="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm shadow-md">Request Access Code</button>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="form-create" onsubmit="handleCreate(event)" class="hidden space-y-3">
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
-            <input type="text" id="reg-name" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">Email Address</label>
-            <input type="email" id="reg-email" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">Role</label>
-              <select id="reg-role" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-                <option value="Inventory Crew">Inventory Crew</option>
-                <option value="Store Manager">Store Manager</option>
-              </select>
+        <!-- MAIN CONTENT AREA -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+          
+          <!-- FEATURE 1: DASHBOARD -->
+          <div id="page-dashboard" class="page-content">
+            <h2 class="fw-bold mb-4">Store Overview</h2>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <div class="card card-summary shadow-sm p-3">
+                  <h6 class="text-muted">Total Stock Items</h6>
+                  <h3 class="fw-bold">128</h3>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card card-summary shadow-sm p-3 border-start border-warning border-5">
+                  <h6 class="text-muted">Low Stock Warnings</h6>
+                  <h3 class="fw-bold text-warning">4 Items</h3>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card card-summary shadow-sm p-3 border-start border-danger border-5">
+                  <h6 class="text-muted">Spoiled / Waste Today</h6>
+                  <h3 class="fw-bold text-danger">2.5 kg</h3>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">Department</label>
-              <input type="text" id="reg-dept" placeholder="Kitchen/Service" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
+          </div>
+
+          <!-- FEATURE 2: STOCK INVENTORY -->
+          <div id="page-inventory" class="page-content d-none">
+            <h2 class="fw-bold mb-3">Stock Inventory</h2>
+            <div class="table-responsive bg-white p-3 rounded shadow-sm">
+              <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Code</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <!-- Data loaded dynamically from Google Sheets -->
+                </tbody>
+              </table>
             </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">4-Digit Security PIN</label>
-            <input type="password" id="reg-pin" maxlength="4" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <button type="submit" class="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition text-xs shadow-md">Register & Send Code</button>
-        </form>
 
-        <!-- VERIFY OTP FORM -->
-        <form id="form-verify" onsubmit="handleVerify(event)" class="hidden space-y-4">
-          <div class="text-xs text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-200 text-center">
-            Verification code sent to:<br><strong id="lbl-verify-email" class="text-red-600 font-bold"></strong>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1 text-center">6-Digit Code</label>
-            <input type="text" id="verify-code" maxlength="6" required class="w-full text-center text-2xl font-black tracking-widest bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-          <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm shadow-md">Verify & Log In</button>
-        </form>
+          <!-- OTHER FEATURES PLACEHOLDERS -->
+          <div id="page-stock-in" class="page-content d-none"><h2>Stock In (Receiving)</h2></div>
+          <div id="page-stock-out" class="page-content d-none"><h2>Stock Out (Usage)</h2></div>
+          <div id="page-spoilage" class="page-content d-none"><h2>Spoilage & Waste Log</h2></div>
+          <div id="page-suppliers" class="page-content d-none"><h2>Suppliers & Commissary</h2></div>
+          <div id="page-reports" class="page-content d-none"><h2>Reports & Audit Trail</h2></div>
+
+        </main>
       </div>
     </div>
   </div>
 
-  <!-- MAIN SYSTEM LAYOUT -->
-  <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
-    
-    <!-- NAVIGATION SIDEBAR -->
-    <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col justify-between">
-      <div>
-        <div class="p-6 border-b border-gray-100 flex items-center space-x-3">
-          <div class="bg-red-600 text-white font-black rounded-xl w-10 h-10 flex items-center justify-center text-xl shadow-sm">J</div>
-          <div>
-            <h1 class="font-extrabold text-sm text-gray-900 leading-tight">Jollibee Hub</h1>
-            <p class="text-[10px] text-red-600 font-bold uppercase tracking-wider">Inventory System</p>
-          </div>
-        </div>
-        
-        <nav class="p-4 space-y-1">
-          <button onclick="navigate('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl bg-red-50 text-red-600"><i class="fa-solid fa-chart-line w-4"></i><span>Dashboard</span></button>
-          <button onclick="navigate('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-boxes-stacked w-4"></i><span>Inventory Stock</span></button>
-          <button onclick="navigate('movements')" id="nav-movements" class="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-right-left w-4"></i><span>Stock Movements</span></button>
-          <button onclick="navigate('waste')" id="nav-waste" class="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-trash-can w-4"></i><span>Waste Tracking</span></button>
-        </nav>
-      </div>
-
-      <div class="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
-        <div class="truncate">
-          <p id="user-display-name" class="text-xs font-bold text-gray-900 truncate">Crew Member</p>
-          <p id="user-display-role" class="text-[10px] text-gray-500 font-semibold uppercase">Staff</p>
-        </div>
-        <button onclick="location.reload()" class="text-gray-400 hover:text-red-600 p-2 transition" title="Log Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
-      </div>
-    </aside>
-
-    <!-- CONTENT DISPLAY -->
-    <main class="flex-1 p-8 space-y-6">
-      
-      <!-- DASHBOARD TAB -->
-      <section id="sec-dashboard" class="space-y-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-2xl font-black text-gray-900">Dashboard Overview</h2>
-            <p class="text-xs text-gray-500">Live store stock status</p>
-          </div>
-          <button onclick="loadData()" class="bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2"><i class="fa-solid fa-rotate"></i><span>Refresh Data</span></button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Products</p>
-            <h3 id="stat-barcode" class="text-3xl font-black text-gray-900 mt-2">0</h3>
-          </div>
-          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Stock Alerts</p>
-            <h3 id="stat-low" class="text-3xl font-black text-red-600 mt-2">0</h3>
-          </div>
-          <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Movements</p>
-            <h3 id="stat-movements" class="text-3xl font-black text-gray-900 mt-2">0</h3>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-gray-100">
-            <h3 class="font-bold text-sm text-gray-900">Low Stock Warnings</h3>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-gray-600">
-              <thead class="bg-gray-50 uppercase text-[10px] font-bold text-gray-400 border-b border-gray-100">
-                <tr><th class="p-4">Barcode Number</th><th class="p-4">Item Name</th><th class="p-4">Category</th><th class="p-4">Quantity</th></tr>
-              </thead>
-              <tbody id="tbl-critical-body" class="divide-y divide-gray-100">
-                <tr><td colspan="4" class="p-4 text-center text-gray-400">Loading alerts...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- INVENTORY TAB -->
-      <section id="sec-inventory" class="hidden space-y-4">
-        <h2 class="text-2xl font-black text-gray-900">Inventory Stock</h2>
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-gray-600">
-              <thead class="bg-gray-50 uppercase text-[10px] font-bold text-gray-400 border-b border-gray-100">
-                <tr><th class="p-4">Barcode Number</th><th class="p-4">Item Name</th><th class="p-4">Category</th><th class="p-4">Unit</th><th class="p-4">Qty</th><th class="p-4">Min Limit</th><th class="p-4">Unit Cost</th></tr>
-              </thead>
-              <tbody id="tbl-inventory-body" class="divide-y divide-gray-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- MOVEMENTS TAB -->
-      <section id="sec-movements" class="hidden space-y-4">
-        <h2 class="text-2xl font-black text-gray-900">Stock Movements</h2>
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-gray-600">
-              <thead class="bg-gray-50 uppercase text-[10px] font-bold text-gray-400 border-b border-gray-100">
-                <tr><th class="p-4">Date/Time</th><th class="p-4">Barcode Number</th><th class="p-4">Item Name</th><th class="p-4">Movement Type</th><th class="p-4">Qty</th><th class="p-4">User</th></tr>
-              </thead>
-              <tbody id="tbl-movements-body" class="divide-y divide-gray-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- WASTE TAB -->
-      <section id="sec-waste" class="hidden space-y-4">
-        <h2 class="text-2xl font-black text-gray-900">Waste Tracking</h2>
-        <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-gray-600">
-              <thead class="bg-gray-50 uppercase text-[10px] font-bold text-gray-400 border-b border-gray-100">
-                <tr><th class="p-4">Date/Time</th><th class="p-4">Barcode Number</th><th class="p-4">Item Name</th><th class="p-4">Qty Wasted</th><th class="p-4">Reason</th><th class="p-4">User</th></tr>
-              </thead>
-              <tbody id="tbl-waste-body" class="divide-y divide-gray-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMsY5K_r7l608zoKWZnzVr2XigKU3IbyuSM4M27dQS_gf-90Xe1WQFeaKyPXkAaPNeDQ/exec";
-    let activeEmail = "";
+    // ILAGAY DITO ANG APPS SCRIPT WEB APP URL MO
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyulXxb-7wDTUQIu6J1ofFU6YCGVaQj7FZuumymCSx706mMZDoNEFj__fm6-tKwSIEHmA/exec";
 
-    function setAuthTab(tab) {
-      document.getElementById('auth-msg').classList.add('hidden');
-      if (tab === 'login') {
-        document.getElementById('btn-tab-login').className = 'flex-1 py-2 rounded-lg bg-white shadow-sm text-red-600 transition font-bold';
-        document.getElementById('btn-tab-create').className = 'flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-800 transition font-normal';
-        document.getElementById('form-login').classList.remove('hidden');
-        document.getElementById('form-create').classList.add('hidden');
-      } else {
-        document.getElementById('btn-tab-create').className = 'flex-1 py-2 rounded-lg bg-white shadow-sm text-red-600 transition font-bold';
-        document.getElementById('btn-tab-login').className = 'flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-800 transition font-normal';
-        document.getElementById('form-create').classList.remove('hidden');
-        document.getElementById('form-login').classList.add('hidden');
-      }
-    }
-
-    async function handleLogin(e) {
+    function handleLogin(e) {
       e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const pin = document.getElementById('login-pin').value.trim();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const loginBtn = document.getElementById('loginBtn');
 
-      showMsg("Checking credentials...", "bg-blue-50 text-blue-600 border border-blue-200");
-      try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}&pin=${encodeURIComponent(pin)}`);
-        const data = await res.json();
-        if (data.status === "OTP_SENT") {
-          activeEmail = email;
-          document.getElementById('lbl-verify-email').innerText = email;
-          document.getElementById('form-login').classList.add('hidden');
-          document.getElementById('form-create').classList.add('hidden');
-          document.getElementById('form-verify').classList.remove('hidden');
-          showMsg("OTP Code sent via Email!", "bg-green-50 text-green-600 border border-green-200");
+      loginBtn.innerText = "Authenticating...";
+      loginBtn.disabled = true;
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "login", username: user, password: pass })
+      })
+      .then(res => res.json())
+      .then(res => {
+        loginBtn.innerText = "Login";
+        loginBtn.disabled = false;
+        if (res.success) {
+          document.getElementById('login-section').classList.add('d-none');
+          document.getElementById('app-section').classList.remove('d-none');
+          loadInventory();
         } else {
-          showMsg(data.message, "bg-red-50 text-red-600 border border-red-200");
+          const alert = document.getElementById('login-alert');
+          alert.innerText = res.message;
+          alert.classList.remove('d-none');
         }
-      } catch (err) {
-        showMsg("Connection failed.", "bg-red-50 text-red-600 border border-red-200");
-      }
-    }
-
-    async function handleCreate(e) {
-      e.preventDefault();
-      const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const role = document.getElementById('reg-role').value;
-      const dept = document.getElementById('reg-dept').value.trim();
-      const pin = document.getElementById('reg-pin').value.trim();
-
-      showMsg("Registering...", "bg-blue-50 text-blue-600 border border-blue-200");
-      try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=register&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}&dept=${encodeURIComponent(dept)}&pin=${encodeURIComponent(pin)}`);
-        const data = await res.json();
-        if (data.status === "SUCCESS") {
-          activeEmail = email;
-          document.getElementById('lbl-verify-email').innerText = email;
-          document.getElementById('form-create').classList.add('hidden');
-          document.getElementById('form-verify').classList.remove('hidden');
-          showMsg("Account created! Enter code.", "bg-green-50 text-green-600 border border-green-200");
-        } else {
-          showMsg(data.message, "bg-red-50 text-red-600 border border-red-200");
-        }
-      } catch (err) {
-        showMsg("Registration error.", "bg-red-50 text-red-600 border border-red-200");
-      }
-    }
-
-    async function handleVerify(e) {
-      e.preventDefault();
-      const code = document.getElementById('verify-code').value.trim();
-
-      showMsg("Verifying OTP...", "bg-blue-50 text-blue-600 border border-blue-200");
-      try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=verify&email=${encodeURIComponent(activeEmail)}&code=${encodeURIComponent(code)}`);
-        const data = await res.json();
-        if (data.status === "SUCCESS") {
-          document.getElementById('user-display-name').innerText = data.user.name;
-          document.getElementById('user-display-role').innerText = data.user.role;
-          document.getElementById('auth-screen').classList.add('hidden');
-          document.getElementById('app-screen').classList.remove('hidden');
-          loadData();
-        } else {
-          showMsg(data.message, "bg-red-50 text-red-600 border border-red-200");
-        }
-      } catch (err) {
-        showMsg("Verification error.", "bg-red-50 text-red-600 border border-red-200");
-      }
-    }
-
-    async function loadData() {
-      try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
-        const data = await res.json();
-        document.getElementById('stat-barcode').innerText = data.inventory.length;
-        const low = data.inventory.filter(i => Number(i.qty) <= Number(i.min));
-        document.getElementById('stat-low').innerText = low.length;
-        document.getElementById('stat-movements').innerText = data.movements.length;
-
-        document.getElementById('tbl-critical-body').innerHTML = low.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-gray-400">All stock levels normal.</td></tr>' :
-          low.map(i => `<tr class="font-bold text-red-600"><td class="p-4">${i.barcode}</td><td class="p-4">${i.name}</td><td class="p-4">${i.category}</td><td class="p-4">${i.qty} ${i.unit}</td></tr>`).join('');
-
-        document.getElementById('tbl-inventory-body').innerHTML = data.inventory.map(i => `<tr><td class="p-4 font-bold text-red-600">${i.barcode}</td><td class="p-4 font-medium text-gray-800">${i.name}</td><td class="p-4">${i.category}</td><td class="p-4">${i.unit}</td><td class="p-4 font-bold">${i.qty}</td><td class="p-4">${i.min}</td><td class="p-4">₱${Number(i.cost).toFixed(2)}</td></tr>`).join('');
-        document.getElementById('tbl-movements-body').innerHTML = data.movements.map(m => `<tr><td class="p-4 text-gray-400">${m.timestamp}</td><td class="p-4 font-bold text-red-600">${m.barcode}</td><td class="p-4 font-medium">${m.name}</td><td class="p-4"><span class="px-2 py-1 rounded-md text-[10px] font-bold ${m.type === 'IN' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${m.type}</span></td><td class="p-4 font-bold">${m.qty}</td><td class="p-4">${m.user}</td></tr>`).join('');
-        document.getElementById('tbl-waste-body').innerHTML = data.waste.map(w => `<tr><td class="p-4 text-gray-400">${w.timestamp}</td><td class="p-4 font-bold text-red-600">${w.barcode}</td><td class="p-4 font-medium">${w.name}</td><td class="p-4 font-bold text-red-600">${w.qty}</td><td class="p-4">${w.reason}</td><td class="p-4">${w.user}</td></tr>`).join('');
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function navigate(sec) {
-      ['dashboard', 'inventory', 'movements', 'waste'].forEach(s => {
-        document.getElementById(`sec-${s}`).classList.add('hidden');
-        document.getElementById(`nav-${s}`).className = 'w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl text-gray-600 hover:bg-gray-50';
+      })
+      .catch(err => {
+        loginBtn.innerText = "Login";
+        loginBtn.disabled = false;
+        alert("Error connecting to database");
       });
-      document.getElementById(`sec-${sec}`).classList.remove('hidden');
-      document.getElementById(`nav-${sec}`).className = 'w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold rounded-xl bg-red-50 text-red-600';
     }
 
-    function showMsg(txt, cls) {
-      const el = document.getElementById('auth-msg');
-      el.className = `p-3 rounded-xl text-xs font-semibold text-center ${cls}`;
-      el.innerText = txt;
-      el.classList.remove('hidden');
+    function loadInventory() {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getInventory" })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          const tbody = document.getElementById('inventory-table-body');
+          tbody.innerHTML = "";
+          res.data.forEach(row => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${row[0]}</td>
+                <td>${row[1]}</td>
+                <td>${row[2]}</td>
+                <td>${row[3]}</td>
+                <td>${row[4]}</td>
+                <td><span class="badge ${row[6] === 'Low Stock' ? 'bg-danger' : 'bg-success'}">${row[6]}</span></td>
+              </tr>
+            `;
+          });
+        }
+      });
+    }
+
+    function switchPage(pageId, element) {
+      document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
+      document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('page-' + pageId).classList.remove('d-none');
+      element.classList.add('active');
+    }
+
+    function logout() {
+      document.getElementById('app-section').classList.add('d-none');
+      document.getElementById('login-section').classList.remove('d-none');
     }
   </script>
 </body>
