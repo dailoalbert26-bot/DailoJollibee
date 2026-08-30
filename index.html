@@ -601,39 +601,48 @@ function closeModal(id){ $(id).classList.remove('open'); }
 
 /* ── API ── */
 async function api(action, data={}){
-  try{
-    const payload = { action, token: SESSION?.token||'', ...data };
-    const url = SCRIPT_URL 
-      + '?payload=' + encodeURIComponent(JSON.stringify(payload))
-      + '&callback=cb_' + Date.now();
-    
+  const payload = { action, token: SESSION?.token||'', ...data };
+  
+  // Try fetch first (works on browser/Vercel)
+  try {
+    const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    const res  = await fetch(url, { redirect: 'follow' });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch(e) {
+      // Strip JSONP wrapper if present
+      const m = text.match(/\w+\((.*)\)/s);
+      if (m) return JSON.parse(m[1]);
+      return { success: false, error: 'Bad response: ' + text.substring(0,100) };
+    }
+  } catch(fetchErr) {
+    // Fallback: JSONP via script tag (for MIT WebViewer)
     return new Promise((resolve) => {
-      const cbName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-      window[cbName] = function(data) {
+      const cbName = '_cb' + Date.now();
+      window[cbName] = function(d) {
         delete window[cbName];
-        document.getElementById('jsonp_' + cbName)?.remove();
-        resolve(data);
+        const s = document.getElementById(cbName);
+        if (s) s.remove();
+        resolve(d);
       };
-      const script = document.createElement('script');
-      script.id = 'jsonp_' + cbName;
-      script.src = SCRIPT_URL 
-        + '?payload=' + encodeURIComponent(JSON.stringify(payload))
-        + '&callback=' + cbName;
-      script.onerror = () => {
+      const s = document.createElement('script');
+      s.id = cbName;
+      s.src = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)) + '&callback=' + cbName;
+      s.onerror = () => {
         delete window[cbName];
-        script.remove();
-        resolve({success:false, error:'Network error - check Apps Script deployment'});
+        s.remove();
+        resolve({ success: false, error: 'Connection failed. Check internet connection.' });
       };
-      document.head.appendChild(script);
+      document.head.appendChild(s);
       setTimeout(() => {
-        if(window[cbName]){
+        if (window[cbName]) {
           delete window[cbName];
-          script.remove();
-          resolve({success:false, error:'Request timeout'});
+          const s2 = document.getElementById(cbName);
+          if (s2) s2.remove();
+          resolve({ success: false, error: 'Request timed out.' });
         }
-      }, 15000);
+      }, 20000);
     });
-  }catch(e){ console.error('API Error:', e); return {success:false,error:e.message}; }
+  }
 }
 
 /* ══════════════════════════════════════════════════
