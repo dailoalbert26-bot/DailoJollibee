@@ -602,47 +602,62 @@ function closeModal(id){ $(id).classList.remove('open'); }
 /* ── API ── */
 async function api(action, data={}){
   const payload = { action, token: SESSION?.token||'', ...data };
-  
-  // Try fetch first (works on browser/Vercel)
+  const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+
+  // Method 1: fetch with redirect follow
   try {
-    const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
-    const res  = await fetch(url, { redirect: 'follow' });
-    const text = await res.text();
-    try { return JSON.parse(text); } catch(e) {
-      // Strip JSONP wrapper if present
-      const m = text.match(/\w+\((.*)\)/s);
-      if (m) return JSON.parse(m[1]);
-      return { success: false, error: 'Bad response: ' + text.substring(0,100) };
-    }
-  } catch(fetchErr) {
-    // Fallback: JSONP via script tag (for MIT WebViewer)
-    return new Promise((resolve) => {
-      const cbName = '_cb' + Date.now();
-      window[cbName] = function(d) {
-        delete window[cbName];
-        const s = document.getElementById(cbName);
-        if (s) s.remove();
-        resolve(d);
-      };
-      const s = document.createElement('script');
-      s.id = cbName;
-      s.src = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)) + '&callback=' + cbName;
-      s.onerror = () => {
-        delete window[cbName];
-        s.remove();
-        resolve({ success: false, error: 'Connection failed. Check internet connection.' });
-      };
-      document.head.appendChild(s);
-      setTimeout(() => {
-        if (window[cbName]) {
-          delete window[cbName];
-          const s2 = document.getElementById(cbName);
-          if (s2) s2.remove();
-          resolve({ success: false, error: 'Request timed out.' });
-        }
-      }, 20000);
+    const res = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      mode: 'cors',
+      cache: 'no-cache'
     });
-  }
+    if (res.ok) {
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch(e) {
+        const m = text.match(/[\w$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+        if(m) return JSON.parse(m[1]);
+      }
+    }
+  } catch(e1) { /* fall through */ }
+
+  // Method 2: XHR
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 20000;
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try { resolve(JSON.parse(xhr.responseText)); }
+            catch(e) {
+              const m = xhr.responseText.match(/[\w$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+              if(m) resolve(JSON.parse(m[1]));
+              else reject(new Error('Bad response'));
+            }
+          } else reject(new Error('HTTP ' + xhr.status));
+        }
+      };
+      xhr.ontimeout = () => reject(new Error('Timeout'));
+      xhr.onerror  = () => reject(new Error('Network error'));
+      xhr.send();
+    });
+    return result;
+  } catch(e2) { /* fall through */ }
+
+  // Method 3: JSONP script tag
+  return new Promise((resolve) => {
+    const cb = '_jis' + Date.now();
+    window[cb] = (d) => { delete window[cb]; document.getElementById(cb)?.remove(); resolve(d); };
+    const s = document.createElement('script');
+    s.id = cb;
+    s.src = url + '&callback=' + cb;
+    s.onerror = () => { delete window[cb]; s.remove(); resolve({success:false, error:'All methods failed. Check internet & Apps Script URL.'}); };
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cb]){ delete window[cb]; document.getElementById(cb)?.remove(); resolve({success:false,error:'Timeout after 20s'}); } }, 20000);
+  });
 }
 
 /* ══════════════════════════════════════════════════
