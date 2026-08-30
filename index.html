@@ -10,467 +10,110 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            jbRed: '#E31837',
-            jbYellow: '#FFC72C',
-            jbDarkRed: '#A61025'
-          }
+          colors: { jbRed: '#E31837', jbYellow: '#FFC72C', jbDarkRed: '#A61025' }
         }
       }
     }
   </script>
   <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #E31837; border-radius: 3px; }
-    .nav-active {
-      background-color: #FEF2F2 !important;
-      color: #E31837 !important;
-      font-weight: 700 !important;
-      border-left: 4px solid #E31837;
-    }
+    .nav-active { background-color: #FEF2F2 !important; color: #E31837 !important; font-weight: 700 !important; border-left: 4px solid #E31837; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800">
 
+  <!-- LOGIN SCREEN -->
   <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-jbRed px-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-full h-2 bg-jbYellow"></div>
+      
       <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-jbYellow text-jbRed rounded-full text-3xl mb-2 font-black shadow-md">
-          J
-        </div>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-jbYellow text-jbRed rounded-full text-3xl mb-2 font-black shadow-md">J</div>
         <h2 class="text-2xl font-bold text-gray-800">Jollibee Store Inventory</h2>
-        <p class="text-xs text-gray-500 uppercase tracking-wider mt-1">Google Sheets & AppScript Backend</p>
       </div>
 
       <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs"></div>
 
-      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+      <!-- STEP 1: LOGIN FORM -->
+      <form id="login-form" onsubmit="handleRequestOTP(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Username / ID</label>
-          <input type="text" id="login-user" required class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="e.g. manager or crew1">
+          <input type="text" id="login-user" required class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="e.g. manager">
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
           <input type="password" id="login-pass" required class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none text-sm" placeholder="••••••••">
         </div>
         <button type="submit" id="login-btn" class="w-full bg-jbRed text-white py-3 rounded-lg font-bold text-sm hover:bg-jbDarkRed transition shadow-lg flex justify-center items-center">
-          <span>SECURE LOGIN</span>
+          <span>CONTINUE TO VERIFICATION</span>
+        </button>
+      </form>
+
+      <!-- STEP 2: GMAIL OTP FORM -->
+      <form id="otp-form" onsubmit="handleVerifyOTP(event)" class="hidden space-y-4">
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-xs">
+          An OTP verification code was sent to your registered Gmail address: <strong id="otp-email-display"></strong>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Enter 6-Digit OTP Code</label>
+          <input type="text" id="login-otp" required maxlength="6" class="w-full text-center tracking-widest text-lg font-bold px-4 py-2 border rounded-lg focus:ring-2 focus:ring-jbRed focus:outline-none" placeholder="123456">
+        </div>
+        <button type="submit" id="otp-btn" class="w-full bg-jbRed text-white py-3 rounded-lg font-bold text-sm hover:bg-jbDarkRed transition shadow-lg">
+          VERIFY & LOGIN
         </button>
       </form>
     </div>
   </div>
 
+  <!-- MAIN APP CONTAINER -->
   <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
-
-    <div class="md:hidden bg-jbRed text-white flex items-center justify-between p-4 shadow-md sticky top-0 z-40">
-      <div class="flex items-center space-x-2">
-        <span class="bg-jbYellow text-jbRed font-bold rounded-full w-8 h-8 flex items-center justify-center">J</span>
-        <span class="font-bold tracking-wide">Jollibee Inventory</span>
-      </div>
-      <button onclick="toggleMobileMenu()" class="text-white text-xl focus:outline-none p-1">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-    </div>
-
-    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-white border-r border-gray-200 min-h-screen fixed md:sticky top-0 h-screen z-30">
-      <div class="p-5 border-b border-gray-100 flex items-center space-x-3 bg-jbRed text-white">
-        <div class="bg-jbYellow text-jbRed font-bold rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-md">J</div>
+    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-white border-r min-h-screen fixed md:sticky top-0 h-screen z-30">
+      <div class="p-5 border-b bg-jbRed text-white flex items-center space-x-3">
+        <div class="bg-jbYellow text-jbRed font-bold rounded-full w-10 h-10 flex items-center justify-center text-xl">J</div>
         <div>
           <h1 class="font-bold text-base leading-tight">Jollibee Store</h1>
-          <p class="text-xs text-jbYellow font-semibold">Inventory System v2.0</p>
+          <p class="text-xs text-jbYellow font-semibold">Inventory System</p>
         </div>
       </div>
-
-      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-        <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i>
-          <span>1. Dashboard</span>
+      <nav class="flex-1 p-3 space-y-1">
+        <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600">
+          <i class="fa-solid fa-chart-pie w-5"></i><span>1. Dashboard</span>
         </button>
-        <button onclick="navigate('ingredients')" id="nav-ingredients" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-drumstick-bite w-5 text-center text-base"></i>
-          <span>2. Raw Ingredients</span>
-        </button>
-        <button onclick="navigate('packaging')" id="nav-packaging" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-box-open w-5 text-center text-base"></i>
-          <span>3. Packaging & Supplies</span>
-        </button>
-        <button onclick="navigate('stock-movement')" id="nav-stock-movement" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-right-left w-5 text-center text-base"></i>
-          <span>4. Stock Movement Log</span>
-        </button>
-        <button onclick="navigate('suppliers')" id="nav-suppliers" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-truck-field w-5 text-center text-base"></i>
-          <span>5. Suppliers & Orders</span>
-        </button>
-        <button onclick="navigate('waste')" id="nav-waste" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-trash-can w-5 text-center text-base"></i>
-          <span>6. Nasira / Natapon Log</span>
-        </button>
-        <button onclick="navigate('reports')" id="nav-reports" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600 hover:bg-red-50 hover:text-jbRed transition">
-          <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-base"></i>
-          <span>7. Reports & Analytics</span>
+        <button onclick="navigate('ingredients')" id="nav-ingredients" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 text-xs font-semibold rounded-lg text-gray-600">
+          <i class="fa-solid fa-drumstick-bite w-5"></i><span>2. Raw Ingredients</span>
         </button>
       </nav>
-
-      <div class="p-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-        <div class="truncate">
-          <p id="user-display-name" class="text-xs font-bold text-gray-800 truncate">Store Manager</p>
-          <p id="user-display-role" class="text-[10px] text-gray-500 font-semibold uppercase">Admin Role</p>
+      <div class="p-3 border-t bg-gray-50 flex items-center justify-between">
+        <div>
+          <p id="user-display-name" class="text-xs font-bold text-gray-800">Manager</p>
+          <p id="user-display-role" class="text-[10px] text-gray-500 uppercase">Admin</p>
         </div>
-        <button onclick="handleLogout()" class="text-gray-400 hover:text-jbRed p-1.5 rounded-lg hover:bg-gray-100 transition" title="Logout">
-          <i class="fa-solid fa-right-from-bracket text-base"></i>
-        </button>
+        <button onclick="location.reload()" class="text-gray-400 hover:text-jbRed p-1.5"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </aside>
 
-    <main class="flex-1 p-4 md:p-6 overflow-y-auto">
-      
-      <div class="flex justify-between items-center mb-6 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-        <div class="flex items-center space-x-2">
-          <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
-          <span class="text-xs font-semibold text-gray-600">Connected to Google Sheets API</span>
-        </div>
-        <button onclick="fetchSheetData()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1">
-          <i class="fa-solid fa-rotate text-xs"></i>
-          <span>Sync Data</span>
-        </button>
-      </div>
-
+    <main class="flex-1 p-6">
       <section id="sec-dashboard" class="space-y-6">
         <h2 class="text-xl font-extrabold text-gray-800">Store Dashboard Overview</h2>
-        
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
-            <div class="p-3 bg-red-100 text-jbRed rounded-lg"><i class="fa-solid fa-triangle-exclamation text-lg"></i></div>
-            <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Kulang sa Stock</p>
-              <h3 id="stat-low-stock" class="text-lg font-extrabold text-gray-800">0 Items</h3>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
-            <div class="p-3 bg-yellow-100 text-yellow-600 rounded-lg"><i class="fa-solid fa-box text-lg"></i></div>
-            <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Kabuuang Items</p>
-              <h3 id="stat-total-sku" class="text-lg font-extrabold text-gray-800">0 Items</h3>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
-            <div class="p-3 bg-green-100 text-green-600 rounded-lg"><i class="fa-solid fa-peso-sign text-lg"></i></div>
-            <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Halaga ng Stocks</p>
-              <h3 id="stat-stock-value" class="text-lg font-extrabold text-gray-800">₱0.00</h3>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center space-x-3">
-            <div class="p-3 bg-blue-100 text-blue-600 rounded-lg"><i class="fa-solid fa-dumpster text-lg"></i></div>
-            <div>
-              <p class="text-[10px] text-gray-400 font-bold uppercase">Nasira / Natapon</p>
-              <h3 id="stat-waste-count" class="text-lg font-extrabold text-gray-800">0 Logs</h3>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <h3 class="font-bold text-sm text-gray-800 mb-3 flex items-center justify-between">
-            <span>Critical Stock Alerts</span>
-            <span class="text-xs text-jbRed font-semibold">Automatic Threshold Detection</span>
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-100">
-                <tr>
-                  <th class="p-3">Item Description</th>
-                  <th class="p-3">Category</th>
-                  <th class="p-3">Stock Level</th>
-                  <th class="p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody id="tbl-critical-body" class="divide-y divide-gray-100">
-                <tr><td colspan="4" class="p-4 text-center text-gray-400">Loading live data...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="sec-ingredients" class="hidden space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-extrabold text-gray-800">Raw Ingredients Directory</h2>
-          <button onclick="openAddItemModal('Raw Ingredients')" class="bg-jbRed text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-jbDarkRed transition shadow-sm">
-            + Add New Ingredient
-          </button>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <h3 class="font-bold text-sm mb-3">Critical Stock Alerts</h3>
           <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
-              <tr>
-                <th class="p-3">Item Code</th>
-                <th class="p-3">Item Description</th>
-                <th class="p-3">Unit</th>
-                <th class="p-3">Current Stock</th>
-                <th class="p-3">Min Level</th>
-                <th class="p-3">Unit Price</th>
-              </tr>
+            <thead class="bg-gray-50 uppercase font-bold border-b">
+              <tr><th class="p-3">Item Description</th><th class="p-3">Category</th><th class="p-3">Stock Level</th></tr>
             </thead>
-            <tbody id="tbl-ingredients-body" class="divide-y divide-gray-100">
-              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading ingredients...</td></tr>
+            <tbody id="tbl-critical-body" class="divide-y divide-gray-100">
+              <tr><td colspan="3" class="p-4 text-center text-gray-400">Loading system data...</td></tr>
             </tbody>
           </table>
         </div>
       </section>
-
-      <section id="sec-packaging" class="hidden space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-extrabold text-gray-800">Packaging & Non-Food Supplies</h2>
-          <button onclick="openAddItemModal('Packaging')" class="bg-jbRed text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-jbDarkRed transition shadow-sm">
-            + Add New Packaging
-          </button>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
-              <tr>
-                <th class="p-3">Item Code</th>
-                <th class="p-3">Packaging Description</th>
-                <th class="p-3">Unit</th>
-                <th class="p-3">Current Stock</th>
-                <th class="p-3">Min Level</th>
-                <th class="p-3">Unit Price</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-packaging-body" class="divide-y divide-gray-100">
-              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading packaging list...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="sec-stock-movement" class="hidden space-y-4">
-        <h2 class="text-xl font-extrabold text-gray-800">Stock Movement Log (IN / OUT)</h2>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <form onsubmit="handleMovementSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Select Item</label>
-              <select id="move-sku" required class="w-full p-2 border rounded-lg text-xs font-semibold focus:outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Movement Type</label>
-              <select id="move-type" class="w-full p-2 border rounded-lg text-xs font-semibold focus:outline-none">
-                <option value="STOCK IN">STOCK IN (Received)</option>
-                <option value="STOCK OUT">STOCK OUT (Dispatched/Used)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Quantity</label>
-              <input type="number" id="move-qty" required min="1" placeholder="e.g. 10" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-            </div>
-            <div class="flex items-end">
-              <button type="submit" id="move-btn" class="w-full bg-jbRed text-white py-2 rounded-lg text-xs font-bold hover:bg-jbDarkRed transition shadow-sm">
-                Log Movement
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
-              <tr>
-                <th class="p-3">Timestamp</th>
-                <th class="p-3">Item Code</th>
-                <th class="p-3">Item Description</th>
-                <th class="p-3">Type</th>
-                <th class="p-3">Quantity</th>
-                <th class="p-3">Logged By</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-movements-body" class="divide-y divide-gray-100">
-              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading history...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="sec-suppliers" class="hidden space-y-4">
-        <h2 class="text-xl font-extrabold text-gray-800">Central Commissary & Vendors</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-            <div class="flex items-center space-x-3 mb-3">
-              <div class="p-3 bg-red-100 text-jbRed rounded-lg font-bold"><i class="fa-solid fa-warehouse"></i></div>
-              <div>
-                <h3 class="font-bold text-sm text-gray-800">Zenith Foods Corp (Jollibee Commissary)</h3>
-                <p class="text-xs text-gray-400">Primary Food & Meat Supplier</p>
-              </div>
-            </div>
-            <p class="text-xs text-gray-600 mb-2"><strong>Deliveries:</strong> Mon / Wed / Fri</p>
-            <p class="text-xs text-gray-600"><strong>Contact:</strong> logistics@zenithfoods.ph | (02) 8888-9000</p>
-            <span class="inline-block mt-3 px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">ACTIVE CONTRACT</span>
-          </div>
-
-          <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-            <div class="flex items-center space-x-3 mb-3">
-              <div class="p-3 bg-yellow-100 text-yellow-700 rounded-lg font-bold"><i class="fa-solid fa-box"></i></div>
-              <div>
-                <h3 class="font-bold text-sm text-gray-800">JFC Packaging Logistics</h3>
-                <p class="text-xs text-gray-400">Paper Products & Eco Box Vendor</p>
-              </div>
-            </div>
-            <p class="text-xs text-gray-600 mb-2"><strong>Deliveries:</strong> Every Tuesday</p>
-            <p class="text-xs text-gray-600"><strong>Contact:</strong> orders@jfcpackaging.com | (02) 8777-1234</p>
-            <span class="inline-block mt-3 px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">APPROVED VENDOR</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="sec-waste" class="hidden space-y-4">
-        <h2 class="text-xl font-extrabold text-gray-800">Nasira / Natapon Tracker</h2>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <form onsubmit="handleWasteSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Select Item</label>
-              <select id="waste-sku" required class="w-full p-2 border rounded-lg text-xs font-semibold focus:outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Quantity Lost</label>
-              <input type="number" id="waste-qty" required min="1" placeholder="e.g. 2" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Reason</label>
-              <select id="waste-reason" class="w-full p-2 border rounded-lg text-xs font-semibold focus:outline-none">
-                <option value="Expired">Expired</option>
-                <option value="Dropped / Spilled">Dropped / Spilled</option>
-                <option value="Overcooked / Burnt">Overcooked / Burnt</option>
-                <option value="Packaging Damaged">Packaging Damaged</option>
-              </select>
-            </div>
-            <div class="flex items-end">
-              <button type="submit" id="waste-btn" class="w-full bg-red-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-sm">
-                Log Waste Entry
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b">
-              <tr>
-                <th class="p-3">Timestamp</th>
-                <th class="p-3">Item Code</th>
-                <th class="p-3">Item Description</th>
-                <th class="p-3">Quantity</th>
-                <th class="p-3">Reason</th>
-                <th class="p-3">Logged By</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-waste-body" class="divide-y divide-gray-100">
-              <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading waste logs...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="sec-reports" class="hidden space-y-4">
-        <h2 class="text-xl font-extrabold text-gray-800">Reports & Export Options</h2>
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
-          <h3 class="font-bold text-sm text-gray-800">Branch Inventory Valuation</h3>
-          <p class="text-xs text-gray-500">Generate structured data summaries for Store Audit and Operational Clearances.</p>
-          <div class="flex flex-wrap gap-3">
-            <button onclick="downloadCSVReport()" class="bg-jbRed text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-jbDarkRed transition flex items-center space-x-2">
-              <i class="fa-solid fa-file-csv text-sm"></i>
-              <span>Download Full Inventory CSV</span>
-            </button>
-            <button onclick="alert('Print Mode: Use your browser print feature (Ctrl+P) to save as PDF')" class="bg-gray-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-black transition flex items-center space-x-2">
-              <i class="fa-solid fa-print text-sm"></i>
-              <span>Print Dashboard PDF</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
     </main>
   </div>
 
-  <div id="modal-add-item" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="modal-title" class="font-bold text-sm text-gray-800">Add New Inventory Item</h3>
-        <button onclick="closeAddItemModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form onsubmit="handleAddItemSubmit(event)" class="space-y-3">
-        <input type="hidden" id="add-category">
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Item Code</label>
-          <input type="text" id="add-sku" required placeholder="e.g. ITEM-005" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Item Description</label>
-          <input type="text" id="add-desc" required placeholder="e.g. Chickenjoy Spicy Seasoning" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Unit</label>
-            <input type="text" id="add-unit" required placeholder="Pack / Box" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Initial Quantity</label>
-            <input type="number" id="add-qty" required min="0" placeholder="0" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Min Threshold</label>
-            <input type="number" id="add-min" required min="1" placeholder="10" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Unit Cost (₱)</label>
-            <input type="number" step="0.01" id="add-cost" required placeholder="150.00" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
-          </div>
-        </div>
-        <div class="pt-2 flex justify-end space-x-2">
-          <button type="button" onclick="closeAddItemModal()" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold">Cancel</button>
-          <button type="submit" id="add-item-btn" class="px-4 py-2 bg-jbRed text-white rounded-lg text-xs font-bold hover:bg-jbDarkRed">Save Item</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUBwrvj06pLOLMm3yQkzp_iJjhezICIEEK9N6ECpI-gPIIrYMW5hvqyoOSCZzMO2Cx9Q/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1zF4WHOOdk9tG8vYw8Q1qinpWzNSiqTeKk4cNsUSx9DWpzp8jniz8wR8EccdTl-qs4A/exec";
+    let activeUser = "";
 
-    let currentUser = null;
-    let inventoryData = [];
-    let movementData = [];
-    let wasteData = [];
-
-    function navigate(sectionId) {
-      const sections = ['dashboard', 'ingredients', 'packaging', 'stock-movement', 'suppliers', 'waste', 'reports'];
-      sections.forEach(s => {
-        const secEl = document.getElementById(`sec-${s}`);
-        const navEl = document.getElementById(`nav-${s}`);
-        if(secEl) secEl.classList.add('hidden');
-        if(navEl) navEl.classList.remove('nav-active');
-      });
-
-      document.getElementById(`sec-${sectionId}`).classList.remove('hidden');
-      document.getElementById(`nav-${sectionId}`).classList.add('nav-active');
-
-      if (window.innerWidth < 768) {
-        document.getElementById('sidebar').classList.add('hidden');
-      }
-    }
-
-    function toggleMobileMenu() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('hidden');
-    }
-
-    async function handleLogin(e) {
+    async function handleRequestOTP(e) {
       e.preventDefault();
       const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value.trim();
@@ -478,263 +121,61 @@
       const btn = document.getElementById('login-btn');
 
       errBox.classList.add('hidden');
-      btn.innerText = "AUTHENTICATING...";
+      btn.innerText = "SENDING OTP TO GMAIL...";
       btn.disabled = true;
 
-      if(APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
-        if((user === 'manager' && pass === 'admin123') || (user === 'crew1' && pass === 'staff123')) {
-          currentUser = {
-            username: user,
-            role: user === 'manager' ? 'Store Manager (Admin)' : 'Inventory Crew (Staff)'
-          };
-          onLoginSuccess();
-          return;
-        } else {
-          errBox.innerText = "Invalid Demo Credentials. Use manager/admin123 or crew1/staff123";
-          errBox.classList.remove('hidden');
-          btn.innerText = "SECURE LOGIN";
-          btn.disabled = false;
-          return;
-        }
-      }
-
       try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
-        const result = await response.json();
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=requestOTP&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+        const data = await res.json();
 
-        if(result.status === "SUCCESS") {
-          currentUser = result.user;
-          onLoginSuccess();
+        if (data.status === "OTP_SENT") {
+          activeUser = user;
+          document.getElementById('otp-email-display').innerText = data.email;
+          document.getElementById('login-form').classList.add('hidden');
+          document.getElementById('otp-form').classList.remove('hidden');
         } else {
-          errBox.innerText = result.message || "Invalid credentials";
+          errBox.innerText = data.message;
           errBox.classList.remove('hidden');
         }
-      } catch(err) {
-        errBox.innerText = "Connection error to Google Sheets API.";
+      } catch (err) {
+        errBox.innerText = "Error requesting security OTP.";
         errBox.classList.remove('hidden');
       } finally {
-        btn.innerText = "SECURE LOGIN";
+        btn.innerText = "CONTINUE TO VERIFICATION";
         btn.disabled = false;
       }
     }
 
-    function onLoginSuccess() {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('app-screen').classList.remove('hidden');
-      document.getElementById('user-display-name').innerText = currentUser.username.toUpperCase();
-      document.getElementById('user-display-role').innerText = currentUser.role;
+    async function handleVerifyOTP(e) {
+      e.preventDefault();
+      const otp = document.getElementById('login-otp').value.trim();
+      const errBox = document.getElementById('login-error');
+      const btn = document.getElementById('otp-btn');
 
-      navigate('dashboard');
-      fetchSheetData();
-    }
-
-    function handleLogout() {
-      currentUser = null;
-      document.getElementById('app-screen').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
-    }
-
-    async function fetchSheetData() {
-      if(APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
-        inventoryData = [
-          { sku: 'RAW-CJ-001', name: 'Chickenjoy Marinated Cuts (20pcs)', category: 'Raw Ingredients', unit: 'Bags', qty: 15, min: 30, cost: 450.00 },
-          { sku: 'RAW-YB-002', name: 'Yumburger Beef Patties', category: 'Raw Ingredients', unit: 'Boxes', qty: 80, min: 40, cost: 600.00 },
-          { sku: 'PKG-CUP-01', name: 'Regular Soda Cups (12oz)', category: 'Packaging', unit: 'Packs', qty: 12, min: 20, cost: 180.00 }
-        ];
-        movementData = [
-          { timestamp: '2026-08-27 10:00', sku: 'RAW-CJ-001', name: 'Chickenjoy Cuts', type: 'STOCK IN', qty: 10, user: 'manager' }
-        ];
-        wasteData = [
-          { timestamp: '2026-08-27 11:30', sku: 'RAW-YB-002', name: 'Beef Patties', qty: 2, reason: 'Dropped / Spilled', user: 'crew1' }
-        ];
-        renderUI();
-        return;
-      }
+      errBox.classList.add('hidden');
+      btn.innerText = "VERIFYING...";
+      btn.disabled = true;
 
       try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=getData`);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=verifyOTP&username=${encodeURIComponent(activeUser)}&otp=${encodeURIComponent(otp)}`);
         const data = await res.json();
-        
-        inventoryData = data.inventory || [];
-        movementData = data.movements || [];
-        wasteData = data.waste || [];
 
-        renderUI();
-      } catch(e) {
-        console.error("Error fetching data:", e);
+        if (data.status === "SUCCESS") {
+          document.getElementById('login-screen').classList.add('hidden');
+          document.getElementById('app-screen').classList.remove('hidden');
+          document.getElementById('user-display-name').innerText = data.user.username.toUpperCase();
+          document.getElementById('user-display-role').innerText = data.user.role;
+        } else {
+          errBox.innerText = data.message;
+          errBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errBox.innerText = "OTP verification failed.";
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.innerText = "VERIFY & LOGIN";
+        btn.disabled = false;
       }
-    }
-
-    function renderUI() {
-      const lowStockItems = inventoryData.filter(i => Number(i.qty) <= Number(i.min));
-      document.getElementById('stat-low-stock').innerText = `${lowStockItems.length} Items`;
-      document.getElementById('stat-total-sku').innerText = `${inventoryData.length} Items`;
-      
-      const totalVal = inventoryData.reduce((acc, i) => acc + (Number(i.qty) * Number(i.cost)), 0);
-      document.getElementById('stat-stock-value').innerText = `₱${totalVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-      document.getElementById('stat-waste-count').innerText = `${wasteData.length} Logs`;
-
-      const critBody = document.getElementById('tbl-critical-body');
-      critBody.innerHTML = lowStockItems.length ? lowStockItems.map(i => `
-        <tr>
-          <td class="p-3 font-bold text-gray-800">${i.name}</td>
-          <td class="p-3 text-gray-500">${i.category}</td>
-          <td class="p-3 font-bold text-red-600">${i.qty} ${i.unit} (Min: ${i.min})</td>
-          <td class="p-3"><span class="bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded text-[10px]">REORDER NOW</span></td>
-        </tr>
-      `).join('') : `<tr><td colspan="4" class="p-4 text-center text-gray-400">All stock levels normal.</td></tr>`;
-
-      const ingBody = document.getElementById('tbl-ingredients-body');
-      const ingredients = inventoryData.filter(i => i.category === 'Raw Ingredients');
-      ingBody.innerHTML = ingredients.map(i => `
-        <tr>
-          <td class="p-3 font-mono font-bold text-gray-500">${i.sku}</td>
-          <td class="p-3 font-bold text-gray-800">${i.name}</td>
-          <td class="p-3">${i.unit}</td>
-          <td class="p-3 font-bold ${Number(i.qty) <= Number(i.min) ? 'text-red-600' : 'text-gray-800'}">${i.qty}</td>
-          <td class="p-3 text-gray-400">${i.min}</td>
-          <td class="p-3 font-semibold">₱${Number(i.cost).toFixed(2)}</td>
-        </tr>
-      `).join('');
-
-      const pkgBody = document.getElementById('tbl-packaging-body');
-      const packaging = inventoryData.filter(i => i.category === 'Packaging');
-      pkgBody.innerHTML = packaging.map(i => `
-        <tr>
-          <td class="p-3 font-mono font-bold text-gray-500">${i.sku}</td>
-          <td class="p-3 font-bold text-gray-800">${i.name}</td>
-          <td class="p-3">${i.unit}</td>
-          <td class="p-3 font-bold ${Number(i.qty) <= Number(i.min) ? 'text-red-600' : 'text-gray-800'}">${i.qty}</td>
-          <td class="p-3 text-gray-400">${i.min}</td>
-          <td class="p-3 font-semibold">₱${Number(i.cost).toFixed(2)}</td>
-        </tr>
-      `).join('');
-
-      const moveBody = document.getElementById('tbl-movements-body');
-      moveBody.innerHTML = movementData.map(m => `
-        <tr>
-          <td class="p-3 text-gray-400">${m.timestamp}</td>
-          <td class="p-3 font-mono font-bold text-gray-500">${m.sku}</td>
-          <td class="p-3 font-bold text-gray-800">${m.name || m.sku}</td>
-          <td class="p-3 font-bold ${m.type === 'STOCK IN' ? 'text-green-600' : 'text-red-600'}">${m.type}</td>
-          <td class="p-3 font-bold">${m.qty}</td>
-          <td class="p-3 text-gray-500">${m.user}</td>
-        </tr>
-      `).join('');
-
-      const wasteBody = document.getElementById('tbl-waste-body');
-      wasteBody.innerHTML = wasteData.map(w => `
-        <tr>
-          <td class="p-3 text-gray-400">${w.timestamp}</td>
-          <td class="p-3 font-mono font-bold text-gray-500">${w.sku}</td>
-          <td class="p-3 font-bold text-gray-800">${w.name || w.sku}</td>
-          <td class="p-3 font-bold text-red-600">${w.qty}</td>
-          <td class="p-3"><span class="bg-red-50 text-red-600 font-semibold px-2 py-0.5 rounded text-[10px]">${w.reason}</span></td>
-          <td class="p-3 text-gray-500">${w.user}</td>
-        </tr>
-      `).join('');
-
-      const skuOptions = inventoryData.map(i => `<option value="${i.sku}">${i.sku} - ${i.name}</option>`).join('');
-      document.getElementById('move-sku').innerHTML = skuOptions;
-      document.getElementById('waste-sku').innerHTML = skuOptions;
-    }
-
-    async function handleMovementSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('move-btn');
-      btn.disabled = true;
-
-      const sku = document.getElementById('move-sku').value;
-      const type = document.getElementById('move-type').value;
-      const qty = document.getElementById('move-qty').value;
-
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'addMovement', sku, type, qty, user: currentUser.username })
-        });
-        await fetchSheetData();
-      } else {
-        alert("Local mode: Item logged.");
-      }
-      e.target.reset();
-      btn.disabled = false;
-    }
-
-    async function handleWasteSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('waste-btn');
-      btn.disabled = true;
-
-      const sku = document.getElementById('waste-sku').value;
-      const qty = document.getElementById('waste-qty').value;
-      const reason = document.getElementById('waste-reason').value;
-
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'addWaste', sku, qty, reason, user: currentUser.username })
-        });
-        await fetchSheetData();
-      } else {
-        alert("Local mode: Waste entry logged.");
-      }
-      e.target.reset();
-      btn.disabled = false;
-    }
-
-    function openAddItemModal(category) {
-      document.getElementById('add-category').value = category;
-      document.getElementById('modal-title').innerText = `Add New ${category} Item`;
-      document.getElementById('modal-add-item').classList.remove('hidden');
-    }
-
-    function closeAddItemModal() {
-      document.getElementById('modal-add-item').classList.add('hidden');
-    }
-
-    async function handleAddItemSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('add-item-btn');
-      btn.disabled = true;
-
-      const itemData = {
-        action: 'addItem',
-        sku: document.getElementById('add-sku').value.trim(),
-        name: document.getElementById('add-desc').value.trim(),
-        category: document.getElementById('add-category').value,
-        unit: document.getElementById('add-unit').value.trim(),
-        qty: document.getElementById('add-qty').value,
-        min: document.getElementById('add-min').value,
-        cost: document.getElementById('add-cost').value
-      };
-
-      if(APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwLT6IWnIRqZMht3j7M2zTfvlmcQDSuyk93DjEi343d9m6UF5AR-kjwqc_tLpk_gIavtQ/exec") {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify(itemData)
-        });
-        await fetchSheetData();
-      } else {
-        alert("Local mode: Item Added.");
-      }
-
-      closeAddItemModal();
-      e.target.reset();
-      btn.disabled = false;
-    }
-
-    function downloadCSVReport() {
-      let csv = 'Item Code,Name,Category,Unit,Qty,Min,Cost\n';
-      inventoryData.forEach(i => {
-        csv += `"${i.sku}","${i.name}","${i.category}","${i.unit}",${i.qty},${i.min},${i.cost}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.setAttribute('href', url);
-      a.setAttribute('download', `Jollibee_Inventory_Report_${new Date().toISOString().substring(0,10)}.csv`);
-      a.click();
     }
   </script>
 </body>
