@@ -577,7 +577,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwO8sSGVWO8bm3qnpwAMTC2jownTCrQzemeVx45m8j9vdJjj1O5yC7GwvLDREzg_Qvywg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKY5X86OHyvu5bxbHSEo988zUsN_g29hegP29UOoL8O8a1s8G5-7x47zQ5KzVzBzZK/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -685,8 +685,7 @@ async function doLogin(){
     try{sessionStorage.setItem('JIS_sess',JSON.stringify(r.user));}catch(e){}
     bootApp(); 
   } else {
-    // Show full error details for debugging
-    showErr((r.error||'Login failed') + ' [' + JSON.stringify(r).substring(0,80) + ']');
+    showErr(r.error || 'Login failed. Please try again.');
   }
 }
 
