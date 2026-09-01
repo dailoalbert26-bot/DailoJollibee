@@ -6,6 +6,8 @@
   <title>Jollibee Inventory System</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -428,7 +430,7 @@
       <section id="sec-reports" class="section">
         <div class="ph">
           <h2>📈 Reports</h2>
-          <button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+          <button class="btn btn-success btn-sm" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-icon" style="background:var(--primary)"><i class="fas fa-peso-sign"></i></div><div class="stat-val" id="rpRev">–</div><div class="stat-lbl">Total Revenue</div></div>
@@ -613,7 +615,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuuAgSsWu8kkaoKgMJ4Ckm9q1c4y7xsfg5E-L_nPmT9V_Yq-k3SIQoSlsnWBSk1DXuHg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyutSr8XWbwlRzpRaGlExAtxQSIPKf0Jx_frXVKmgcT4zn0hzKInZbe6AzBB2SGuuTmPw/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1118,50 +1120,152 @@ async function loadReports(){
     <tbody>${prods.map(p=>{ const l=Number(p.stock)<=Number(p.threshold||10); return `<tr><td>${p.emoji||'📦'} <b>${p.name}</b></td><td>${p.category||'–'}</td><td class="${l?'low':'ok'}">${fmtN(p.stock)}</td><td>${fmt(p.price)}</td><td>${fmt(Number(p.stock)*Number(p.price))}</td><td><span class="badge ${l?'b-danger':'b-success'}">${l?'Low':'OK'}</span></td></tr>`; }).join('')}</tbody>
   </table></div>`;
 }
-function exportCSV(){
-  if(!PRODUCTS.length){ toast('No data to export.'); return; }
-  const rows=[['Product','Category','Price','Stock','Unit','Threshold','Stock Value']];
-  PRODUCTS.forEach(p=>rows.push([p.name,p.category,p.price,p.stock,p.unit||'pcs',p.threshold||10,Number(p.stock)*Number(p.price)]));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const filename=`jollibee_inventory_${new Date().toISOString().split('T')[0]}.csv`;
+function exportPDF(){
+  if(!PRODUCTS.length){ toast('⚠️ No data to export.'); return; }
+  toast('📄 Generating PDF…');
 
-  // Android/mobile friendly export
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+  const now      = new Date();
+  const dateStr  = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr  = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  const filename = `Jollibee_Inventory_${now.toISOString().split('T')[0]}.pdf`;
+
+  // ── HEADER ──────────────────────────────────────
+  doc.setFillColor(204, 0, 0); // Jollibee red
+  doc.rect(0, 0, 210, 28, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica','bold');
+  doc.text('JOLLIBEE INVENTORY SYSTEM', 105, 12, {align:'center'});
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Inventory Report', 105, 20, {align:'center'});
+
+  // ── DATE ────────────────────────────────────────
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(9);
+  doc.text(`Generated: ${dateStr} at ${timeStr}`, 14, 34);
+
+  // ── SUMMARY STATS ───────────────────────────────
+  const totalProducts = PRODUCTS.length;
+  const lowStock      = PRODUCTS.filter(p=>Number(p.stock)<=Number(p.threshold||10)).length;
+  const totalValue    = PRODUCTS.reduce((s,p)=>s+Number(p.stock||0)*Number(p.price||0),0);
+  const totalStock    = PRODUCTS.reduce((s,p)=>s+Number(p.stock||0),0);
+
+  // Summary boxes
+  const boxes = [
+    { label:'Total Products', value: totalProducts, color:[204,0,0] },
+    { label:'Low Stock Items', value: lowStock,      color:[239,68,68] },
+    { label:'Total Stock',     value: totalStock,    color:[34,197,94] },
+    { label:'Inventory Value', value:'₱'+Number(totalValue).toLocaleString('en-PH',{minimumFractionDigits:2}), color:[59,130,246] }
+  ];
+
+  boxes.forEach((b,i)=>{
+    const x = 14 + (i * 46);
+    doc.setFillColor(...b.color);
+    doc.roundedRect(x, 38, 42, 18, 2, 2, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7);
+    doc.setFont('helvetica','normal');
+    doc.text(b.label, x+21, 43, {align:'center'});
+    doc.setFontSize(11);
+    doc.setFont('helvetica','bold');
+    doc.text(String(b.value), x+21, 51, {align:'center'});
+  });
+
+  // ── INVENTORY TABLE ──────────────────────────────
+  doc.setTextColor(30,41,59);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
+  doc.text('Inventory Summary', 14, 66);
+
+  const tableData = PRODUCTS.map((p,i)=>{
+    const val   = Number(p.stock||0)*Number(p.price||0);
+    const isLow = Number(p.stock)<=Number(p.threshold||10);
+    return [
+      i+1,
+      (p.emoji||'') + ' ' + p.name,
+      p.category||'–',
+      '₱'+Number(p.price||0).toLocaleString('en-PH',{minimumFractionDigits:2}),
+      p.stock+' '+(p.unit||'pcs'),
+      isLow ? '⚠ Low' : '✓ OK',
+      '₱'+val.toLocaleString('en-PH',{minimumFractionDigits:2})
+    ];
+  });
+
+  doc.autoTable({
+    startY: 70,
+    head: [['#','Product','Category','Price','Stock','Status','Stock Value']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [204,0,0],
+      textColor: [255,255,255],
+      fontStyle: 'bold',
+      fontSize: 8
+    },
+    bodyStyles: { fontSize: 8, textColor:[30,41,59] },
+    alternateRowStyles: { fillColor:[255,240,240] },
+    columnStyles: {
+      0: { cellWidth:8,  halign:'center' },
+      1: { cellWidth:45 },
+      2: { cellWidth:28 },
+      3: { cellWidth:22, halign:'right' },
+      4: { cellWidth:20, halign:'center' },
+      5: { cellWidth:16, halign:'center' },
+      6: { cellWidth:27, halign:'right' }
+    },
+    didParseCell: function(data){
+      if(data.column.index===5 && data.section==='body'){
+        if(String(data.cell.raw).includes('Low')){
+          data.cell.styles.textColor=[239,68,68];
+          data.cell.styles.fontStyle='bold';
+        } else {
+          data.cell.styles.textColor=[34,197,94];
+        }
+      }
+    }
+  });
+
+  // ── TOTAL ROW ────────────────────────────────────
+  const finalY = doc.lastAutoTable.finalY + 4;
+  doc.setFontSize(9);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(30,41,59);
+  doc.text(`Total Inventory Value: ₱${totalValue.toLocaleString('en-PH',{minimumFractionDigits:2})}`, 14, finalY);
+
+  // ── FOOTER ───────────────────────────────────────
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFillColor(204,0,0);
+    doc.rect(0,287,210,10,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7);
+    doc.text('Jollibee Inventory System — Confidential', 14, 293);
+    doc.text(`Page ${i} of ${pageCount}`, 196, 293, {align:'right'});
+  }
+
+  // ── SAVE / SHARE ─────────────────────────────────
   const isAndroid = /android/i.test(navigator.userAgent);
   const isMobile  = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 
-  if (isMobile || isAndroid) {
-    // Open CSV in new tab — user can save from there
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write('<pre>' + csv.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>');
-      win.document.title = filename;
-      toast('📥 CSV opened! Long-press → Save/Share');
-    } else {
-      // Fallback: show in textarea for manual copy
-      const ta = document.createElement('textarea');
-      ta.value = csv;
-      ta.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:50vh;z-index:9999;font-size:12px;background:#1e293b;color:#fff;padding:12px;';
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = '✕ Close';
-      closeBtn.style.cssText = 'position:fixed;top:0;right:0;z-index:10000;padding:10px 16px;background:#e8334a;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;';
-      closeBtn.onclick = () => { ta.remove(); closeBtn.remove(); };
-      document.body.appendChild(ta);
-      document.body.appendChild(closeBtn);
-      ta.select();
-      toast('📋 CSV ready — copy the text!');
+  if(isMobile || isAndroid){
+    // Mobile: open in new tab for Share/Save
+    const pdfBlob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const win     = window.open(blobUrl,'_blank');
+    if(!win){
+      // Fallback: data URI
+      doc.output('dataurlnewwindow');
     }
+    toast('📄 PDF ready! Tap Share or Save.');
   } else {
-    // Desktop download
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('📥 Export started!');
+    // Desktop: direct download
+    doc.save(filename);
+    toast('📥 PDF downloaded!');
   }
 }
 
