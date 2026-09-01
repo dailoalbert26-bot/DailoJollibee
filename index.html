@@ -615,7 +615,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxx-NEyQNEXYgUdShF8q_ik1SHxJfXNALyO9nIGxmF6lENL7Gl2JOxXC_n97ADQ-MZDbA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGD2pBMs3yk3Xf6KRfC1fRN4dCe6mEDzcfAHh8miN_1jdNB_Ths6pCQEOElBqz8SPAGw/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1111,20 +1111,109 @@ async function loadReports(){
   </table></div>`;
 }
 async function exportPDF(){
-  toast('⏳ Generating report…');
-  const btn = document.querySelector('[onclick="exportPDF()"]');
-  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating…'; }
+  if(!PRODUCTS.length){
+    toast('⏳ Loading data…');
+    const r = await api('getProducts');
+    if(!r.success || !r.data?.length){ toast('⚠️ No products found.'); return; }
+    PRODUCTS = r.data;
+  }
 
-  const r = await api('generatePDF');
+  toast('📄 Generating PDF…');
+  const { jsPDF } = window.jspdf;
+  const doc  = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const now  = new Date();
+  const date = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const time = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  const fname= `Jollibee_Inventory_${now.toISOString().split('T')[0]}.pdf`;
+  const strip= s=>(s||'').replace(/[^\x00-\x7F]/g,'').trim();
 
-  if(btn){ btn.disabled=false; btn.innerHTML='<i class="fas fa-file-pdf"></i> Export PDF'; }
+  // HEADER
+  doc.setFillColor(204,0,0);
+  doc.rect(0,0,297,26,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text('JOLLIBEE INVENTORY SYSTEM',148,11,{align:'center'});
+  doc.setFontSize(9);  doc.setFont('helvetica','normal');
+  doc.text('Inventory Report  |  Generated: '+date+' at '+time,148,19,{align:'center'});
 
-  if(r.success && r.url){
-    // Open Google Drive PDF link — works on ALL devices including Android
-    window.open(r.url, '_blank');
-    toast('📄 PDF ready! Opening Google Drive…');
-  } else {
-    toast('❌ Failed to generate PDF: ' + (r.error||'Unknown error'));
+  // STAT BOXES
+  const tv = PRODUCTS.reduce((s,p)=>s+Number(p.stock||0)*Number(p.price||0),0);
+  const ls = PRODUCTS.filter(p=>Number(p.stock)<=Number(p.threshold||10)).length;
+  [{l:'Total Products',v:String(PRODUCTS.length),r:204,g:0,b:0},
+   {l:'Low Stock',v:String(ls),r:239,g:68,b:68},
+   {l:'Total Orders',v:String(ORDERS.length||0),r:34,g:197,b:94},
+   {l:'Stock Value',v:'P'+tv.toLocaleString('en-PH',{minimumFractionDigits:2}),r:59,g:130,b:246}
+  ].forEach((b,i)=>{
+    const x=14+(i*68);
+    doc.setFillColor(b.r,b.g,b.b);
+    doc.roundedRect(x,30,64,16,2,2,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text(b.l,x+32,36,{align:'center'});
+    doc.setFontSize(11); doc.setFont('helvetica','bold');
+    doc.text(b.v,x+32,44,{align:'center'});
+  });
+
+  // TABLE
+  doc.setTextColor(30,41,59);
+  doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text('Inventory Summary',14,56);
+
+  doc.autoTable({
+    startY:60,
+    head:[['#','Product','Category','Price','Stock','Status','Stock Value']],
+    body: PRODUCTS.map((p,i)=>{
+      const val=Number(p.stock||0)*Number(p.price||0);
+      const low=Number(p.stock)<=Number(p.threshold||10);
+      return [i+1, strip(p.name), p.category||'-',
+        'P'+Number(p.price||0).toLocaleString('en-PH',{minimumFractionDigits:2}),
+        (p.stock||0)+' '+(p.unit||'pcs'),
+        low?'Low Stock':'In Stock',
+        'P'+val.toLocaleString('en-PH',{minimumFractionDigits:2})];
+    }),
+    theme:'striped',
+    styles:{font:'helvetica',fontSize:9,cellPadding:3},
+    headStyles:{fillColor:[204,0,0],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
+    alternateRowStyles:{fillColor:[255,245,245]},
+    columnStyles:{
+      0:{cellWidth:10,halign:'center'},1:{cellWidth:62},2:{cellWidth:38},
+      3:{cellWidth:28,halign:'right'},4:{cellWidth:26,halign:'center'},
+      5:{cellWidth:24,halign:'center'},6:{cellWidth:36,halign:'right'}
+    },
+    didParseCell:d=>{
+      if(d.column.index===5&&d.section==='body'){
+        d.cell.styles.textColor=String(d.cell.raw).includes('Low')?[204,0,0]:[34,197,94];
+        d.cell.styles.fontStyle='bold';
+      }
+    }
+  });
+
+  // TOTAL
+  const fy=doc.lastAutoTable.finalY+5;
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(30,41,59);
+  doc.text('Total Inventory Value: P'+tv.toLocaleString('en-PH',{minimumFractionDigits:2}),14,fy);
+
+  // FOOTER
+  const pg=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pg;i++){
+    doc.setPage(i);
+    doc.setFillColor(204,0,0); doc.rect(0,198,297,12,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(7);
+    doc.text('Jollibee Inventory System — Confidential',14,205);
+    doc.text('Page '+i+' of '+pg,283,205,{align:'right'});
+  }
+
+  // SAVE — works on desktop AND Android browser
+  try {
+    doc.save(fname);
+    toast('📥 PDF saved to Downloads!');
+  } catch(e) {
+    // Fallback for WebViewer
+    const uri = doc.output('datauristring');
+    const a   = document.createElement('a');
+    a.href    = uri; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast('📄 PDF ready!');
   }
 }
 /* ══════════════════════════════════════════════════
