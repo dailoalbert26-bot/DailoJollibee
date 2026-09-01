@@ -9,24 +9,10 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary:   #008080;
-      --primary-d: #006666;
-      --primary-l: #e0f5f5;
-      --accent:    #e8334a;
-      --white:     #ffffff;
-      --gray-bg:   #f4f6f8;
-      --gray-1:    #e2e8f0;
-      --gray-2:    #94a3b8;
-      --gray-3:    #64748b;
-      --dark:      #1e293b;
-      --success:   #22c55e;
-      --warning:   #f59e0b;
-      --danger:    #ef4444;
-      --info:      #3b82f6;
-      --radius:    12px;
-      --shadow:    0 2px 12px rgba(0,0,0,.10);
-      --nav-h:     64px;
-    }
+  --primary:   #008080;
+  --primary-d: #006666;
+  --primary-l: #e0f5f5;
+}
     html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-bg); color: var(--dark); -webkit-tap-highlight-color: transparent; }
     ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--gray-1); border-radius: 99px; }
 
@@ -577,7 +563,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKY5X86OHyvu5bxbHSEo988zUsN_g29hegP29UOoL8O8a1s8G5-7x47zQ5KzVzBzZK/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmQULQxghjaLD5cOE7BPv55TRIFx6bo0zvWKagdGnMRY--e_3M368eFlD5wfBax3vkLQ/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -755,7 +741,7 @@ async function loadDashboard(){
   if(CHART_SALES) CHART_SALES.destroy();
   CHART_SALES = new Chart($('chartSales').getContext('2d'),{
     type:'line',
-    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],fill:true,borderColor:'#008080',backgroundColor:'rgba(0,128,128,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
+    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],fill:true,borderColor:'#e60000',backgroundColor:'rgba(230,0,0,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
     options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}} }
   });
 
