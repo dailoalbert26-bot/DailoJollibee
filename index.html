@@ -615,7 +615,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhD6h0-mZrbabJ38Ew0j9RZZ_66pvkE9IlmCj5wNkdJukIcf0GC-klhEsq48-aLA5rlQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyutSr8XWbwlRzpRaGlExAtxQSIPKf0Jx_frXVKmgcT4zn0hzKInZbe6AzBB2SGuuTmPw/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1107,8 +1107,14 @@ async function loadReports(){
     <tbody>${prods.map(p=>{ const l=Number(p.stock)<=Number(p.threshold||10); return `<tr><td>${p.emoji||'📦'} <b>${p.name}</b></td><td>${p.category||'–'}</td><td class="${l?'low':'ok'}">${fmtN(p.stock)}</td><td>${fmt(p.price)}</td><td>${fmt(Number(p.stock)*Number(p.price))}</td><td><span class="badge ${l?'b-danger':'b-success'}">${l?'Low':'OK'}</span></td></tr>`; }).join('')}</tbody>
   </table></div>`;
 }
-function exportPDF(){
-  if(!PRODUCTS.length){ toast('⚠️ No data to export.'); return; }
+async function exportPDF(){
+  // Load products first if empty
+  if(!PRODUCTS.length){
+    toast('⏳ Loading data…');
+    const r = await api('getProducts');
+    if(!r.success || !r.data?.length){ toast('⚠️ No data to export.'); return; }
+    PRODUCTS = r.data;
+  }
   toast('📄 Generating PDF…');
 
   const { jsPDF } = window.jspdf;
