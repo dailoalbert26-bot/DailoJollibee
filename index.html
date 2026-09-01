@@ -9,9 +9,9 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary:   #008080;
-      --primary-d: #006666;
-      --primary-l: #e0f5f5;
+      --primary:   #e60000;
+      --primary-d: #b30000;
+      --primary-l: #ffe5e5;
       --accent:    #e8334a;
       --white:     #ffffff;
       --gray-bg:   #f4f6f8;
@@ -756,7 +756,7 @@ async function loadDashboard(){
   if(CHART_SALES) CHART_SALES.destroy();
   CHART_SALES = new Chart($('chartSales').getContext('2d'),{
     type:'line',
-    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],fill:true,borderColor:'#008080',backgroundColor:'rgba(0,128,128,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
+    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],borderColor:'#e60000',backgroundColor:'rgba(230,0,0,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
     options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}} }
   });
 
