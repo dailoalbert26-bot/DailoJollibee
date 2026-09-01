@@ -615,7 +615,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0YeP5QSOndBkRtAWowdYXm4-LkfQM5Na3p-M-fnifDYSwop35JBnOYtKgHTeUOjjC/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHOoMLonTr20UBuzVtCjitOWqRY0QsbUu3ods6--VpYT4K0SU4e69Bt2WOxszeVRsGdQ/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1083,6 +1083,9 @@ async function saveSup(){
 async function loadReports(){
   const [pr,or]=await Promise.all([api('getProducts'),api('getOrders')]);
   const prods=pr.data||[], ords=or.data||[];
+  // Store globally so exportPDF can use them directly
+  PRODUCTS = prods;
+  ORDERS   = ords;
   const sells=ords.filter(o=>o.type==='Sell');
   const rev=sells.reduce((s,o)=>s+Number(o.total||0),0);
   const low=prods.filter(p=>Number(p.stock)<=Number(p.threshold||10)).length;
@@ -1111,9 +1114,13 @@ async function exportPDF(){
   if(!PRODUCTS.length){
     toast('⏳ Loading data…');
     const r = await api('getProducts');
-    if(!r.success || !r.data?.length){ toast('⚠️ No data to export.'); return; }
+    if(!r.success || !r.data?.length){ toast('⚠️ No products found. Go to Products section first.'); return; }
     PRODUCTS = r.data;
   }
+  generatePDF();
+}
+
+function generatePDF(){
   toast('📄 Generating PDF…');
 
   const { jsPDF } = window.jspdf;
@@ -1237,11 +1244,21 @@ async function exportPDF(){
   // ── SAVE ─────────────────────────────────────────
   const isMobile=/android|iphone|ipad|ipod/i.test(navigator.userAgent);
   if(isMobile){
-    const blob=doc.output('blob');
-    const url=URL.createObjectURL(blob);
-    const win=window.open(url,'_blank');
-    if(!win) doc.output('dataurlnewwindow');
-    toast('📄 PDF ready! Tap Share or Save.');
+    try {
+      // Try blob URL first
+      const blob = doc.output('blob');
+      const url  = URL.createObjectURL(blob);
+      const win  = window.open(url,'_blank');
+      if(win){ toast('📄 PDF opened! Tap ⋮ → Download to save.'); }
+      else {
+        // Fallback: data URI in new window
+        doc.output('dataurlnewwindow');
+        toast('📄 PDF ready! Save it from your browser.');
+      }
+    } catch(e) {
+      doc.output('dataurlnewwindow');
+      toast('📄 PDF ready! Save it from your browser.');
+    }
   } else {
     doc.save(fname);
     toast('📥 PDF downloaded!');
