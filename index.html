@@ -9,10 +9,10 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary:   #e60000;
-      --primary-d: #b30000;
+      --primary:   #CC0000;
+      --primary-d: #990000;
       --primary-l: #ffe5e5;
-      --accent:    #e8334a;
+      --accent:    #FFC200;
       --white:     #ffffff;
       --gray-bg:   #f4f6f8;
       --gray-1:    #e2e8f0;
@@ -27,7 +27,6 @@
       --shadow:    0 2px 12px rgba(0,0,0,.10);
       --nav-h:     64px;
     }
-
     html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-bg); color: var(--dark); -webkit-tap-highlight-color: transparent; }
     ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--gray-1); border-radius: 99px; }
 
@@ -35,7 +34,7 @@
     #loginPage { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,var(--primary) 0%,var(--primary-d) 100%); padding:16px; }
     .login-card { background:var(--white); border-radius:20px; padding:40px 28px; width:100%; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,.18); animation:fadeUp .4s ease; }
     .login-logo { text-align:center; margin-bottom:28px; }
-    .login-logo .bee { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#e8334a,#ffcc00); display:flex; align-items:center; justify-content:center; font-size:38px; margin:0 auto 10px; }
+    .login-logo .bee { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#CC0000,#FFC200); display:flex; align-items:center; justify-content:center; font-size:38px; margin:0 auto 10px; overflow:hidden; }
     .login-logo .brand { font-size:20px; font-weight:700; color:var(--primary); }
     .login-logo .sub { font-size:12px; color:var(--gray-2); margin-top:2px; }
     .form-group { margin-bottom:14px; }
@@ -229,7 +228,10 @@
 <div id="loginPage">
   <div class="login-card">
     <div class="login-logo">
-      <div class="bee">🐝</div>
+      <div class="bee">
+        <img id="loginLogo" src="jollibee-logo.png" alt="Jollibee" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';document.getElementById('loginLogoFallback').style.display='flex';" />
+        <div id="loginLogoFallback" style="display:none;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#CC0000,#FFC200);align-items:center;justify-content:center;font-size:38px;margin:0 auto;">🐝</div>
+      </div>
       <div class="brand">Jollibee Inventory System</div>
       <div class="sub">Store Management Portal</div>
     </div>
@@ -263,7 +265,7 @@
   <!-- SIDEBAR (desktop only) -->
   <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
-      <div class="bee2">🐝</div>
+      <img src="jollibee-logo.png" alt="Jollibee" style="width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;" onerror="this.style.display='none';" />
       <div class="brand2">Jollibee<br>Inventory System</div>
       <div class="sub2">Store Management</div>
     </div>
@@ -578,7 +580,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmQULQxghjaLD5cOE7BPv55TRIFx6bo0zvWKagdGnMRY--e_3M368eFlD5wfBax3vkLQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzftN2WnPDRNAqyEW1KOt34sV7bW4jDxTLJnlutW1AR5ATAdl-jkAlsjUxv-9HS3lDRCg/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -756,7 +758,7 @@ async function loadDashboard(){
   if(CHART_SALES) CHART_SALES.destroy();
   CHART_SALES = new Chart($('chartSales').getContext('2d'),{
     type:'line',
-    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],borderColor:'#e60000',backgroundColor:'rgba(230,0,0,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
+    data:{ labels:d.salesDays||[], datasets:[{label:'Revenue (₱)',data:d.salesData||[],fill:true,borderColor:'#008080',backgroundColor:'rgba(0,128,128,.12)',borderWidth:2,pointRadius:4,tension:.4}] },
     options:{ responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}} }
   });
 
@@ -1021,10 +1023,46 @@ function exportCSV(){
   const rows=[['Product','Category','Price','Stock','Unit','Threshold','Stock Value']];
   PRODUCTS.forEach(p=>rows.push([p.name,p.category,p.price,p.stock,p.unit||'pcs',p.threshold||10,Number(p.stock)*Number(p.price)]));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download=`jollibee_inventory_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click(); toast('📥 Export started!');
+  const filename=`jollibee_inventory_${new Date().toISOString().split('T')[0]}.csv`;
+
+  // Android/mobile friendly export
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const isMobile  = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  if (isMobile || isAndroid) {
+    // Open CSV in new tab — user can save from there
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write('<pre>' + csv.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>');
+      win.document.title = filename;
+      toast('📥 CSV opened! Long-press → Save/Share');
+    } else {
+      // Fallback: show in textarea for manual copy
+      const ta = document.createElement('textarea');
+      ta.value = csv;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:50vh;z-index:9999;font-size:12px;background:#1e293b;color:#fff;padding:12px;';
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = '✕ Close';
+      closeBtn.style.cssText = 'position:fixed;top:0;right:0;z-index:10000;padding:10px 16px;background:#e8334a;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;';
+      closeBtn.onclick = () => { ta.remove(); closeBtn.remove(); };
+      document.body.appendChild(ta);
+      document.body.appendChild(closeBtn);
+      ta.select();
+      toast('📋 CSV ready — copy the text!');
+    }
+  } else {
+    // Desktop download
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('📥 Export started!');
+  }
 }
 
 /* ══════════════════════════════════════════════════
