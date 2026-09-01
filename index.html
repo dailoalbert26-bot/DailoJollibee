@@ -260,38 +260,6 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════
-     OTP PAGE
-════════════════════════════════════════════════════ -->
-<div id="otpPage" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#CC0000 0%,#990000 100%);padding:16px;">
-  <div class="login-card">
-    <div class="login-logo">
-      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#CC0000,#FFC200);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;">📧</div>
-      <div class="brand">Check Your Email</div>
-      <div class="sub" id="otpSubText">We sent a 6-digit code to your email</div>
-    </div>
-    <div class="form-group">
-      <label>Enter 6-Digit OTP Code</label>
-      <input type="number" id="otpInput" placeholder="000000" maxlength="6"
-        style="font-size:28px;text-align:center;letter-spacing:8px;font-weight:700;padding:14px;"
-        oninput="if(this.value.length>6)this.value=this.value.slice(0,6)"
-        onkeydown="if(event.key==='Enter')verifyOTP()" />
-    </div>
-    <div class="login-err" id="otpErr"><i class="fas fa-exclamation-circle"></i><span id="otpErrMsg">Invalid OTP.</span></div>
-    <button class="btn btn-primary btn-block" id="otpBtn" onclick="verifyOTP()" style="margin-top:14px;">
-      <i class="fas fa-check-circle"></i> Verify OTP
-    </button>
-    <div style="text-align:center;margin-top:14px;">
-      <span style="font-size:12px;color:var(--gray-2);">Didn't receive the code? </span>
-      <button id="resendBtn" onclick="resendOTP()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;">Resend OTP</button>
-    </div>
-    <div style="text-align:center;margin-top:8px;">
-      <button onclick="backToLogin()" style="background:none;border:none;color:var(--gray-2);font-size:12px;cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Login</button>
-    </div>
-    <p style="text-align:center;font-size:11px;color:var(--gray-2);margin-top:14px;">OTP expires in <span id="otpTimer" style="font-weight:700;color:var(--primary);">10:00</span></p>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
      APP SHELL
 ════════════════════════════════════════════════════ -->
 <div id="app">
@@ -701,117 +669,41 @@ async function api(action, data={}){
 /* ══════════════════════════════════════════════════
    AUTH
 ══════════════════════════════════════════════════ */
-let OTP_TEMP_USER  = null; // holds user data between login and OTP
-let OTP_TIMER_INT  = null; // countdown interval
-
 async function doLogin(){
   const u=$('lgUser').value.trim(), p=$('lgPass').value.trim();
   if(!u||!p){ showErr('Please enter username and password.'); return; }
   const btn=$('lgBtn'); btn.innerHTML='<span class="spin"></span> Signing in…'; btn.disabled=true;
-
   let r;
-  try { r = await api('login',{username:u,password:p}); }
+  try{ r=await api('login',{username:u,password:p}); }
   catch(e){ btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled=false; showErr('Connection error.'); return; }
-
   btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled=false;
-
   if(r.success){
-    // Credentials OK — now send OTP
-    OTP_TEMP_USER = r.user;
-    await sendOTP();
+    SESSION=r.user;
+    try{localStorage.setItem('JIS_sess',JSON.stringify(r.user));}catch(e){}
+    try{sessionStorage.setItem('JIS_sess',JSON.stringify(r.user));}catch(e){}
+    bootApp();
   } else {
     showErr(r.error||'Invalid username or password.');
   }
 }
 
-async function sendOTP(){
-  const r = await api('sendOTP', { token: OTP_TEMP_USER.token });
-  if(r.success){
-    // Show OTP page
-    $('loginPage').style.display  = 'none';
-    $('otpPage').style.display    = 'flex';
-    $('otpInput').value           = '';
-    const masked = r.maskedEmail || 'your registered email';
-    $('otpSubText').textContent   = `We sent a 6-digit code to ${masked}`;
-    startOTPTimer(600); // 10 minutes
-    toast('📧 OTP sent! Check your email.');
-  } else {
-    showErr(r.error || 'Failed to send OTP. Check your email address.');
-  }
-}
-
-async function resendOTP(){
-  const btn=$('resendBtn'); btn.textContent='Sending…'; btn.disabled=true;
-  await sendOTP();
-  btn.textContent='Resend OTP'; btn.disabled=false;
-}
-
-async function verifyOTP(){
-  const code = $('otpInput').value.trim();
-  if(code.length !== 6){ showOtpErr('Please enter the 6-digit OTP code.'); return; }
-  const btn=$('otpBtn'); btn.innerHTML='<span class="spin"></span> Verifying…'; btn.disabled=true;
-
-  const r = await api('verifyOTP', { token: OTP_TEMP_USER.token, otp: code });
-  btn.innerHTML='<i class="fas fa-check-circle"></i> Verify OTP'; btn.disabled=false;
-
-  if(r.success){
-    clearInterval(OTP_TIMER_INT);
-    SESSION = OTP_TEMP_USER;
-    OTP_TEMP_USER = null;
-    try{localStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
-    try{sessionStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
-    $('otpPage').style.display = 'none';
-    bootApp();
-  } else {
-    showOtpErr(r.error || 'Invalid or expired OTP.');
-  }
-}
-
-function backToLogin(){
-  $('otpPage').style.display  = 'none';
-  $('loginPage').style.display= 'flex';
-  clearInterval(OTP_TIMER_INT);
-  OTP_TEMP_USER = null;
-}
-
-function startOTPTimer(seconds){
-  clearInterval(OTP_TIMER_INT);
-  let remaining = seconds;
-  const el = $('otpTimer');
-  OTP_TIMER_INT = setInterval(()=>{
-    remaining--;
-    const m = Math.floor(remaining/60).toString().padStart(2,'0');
-    const s = (remaining%60).toString().padStart(2,'0');
-    if(el) el.textContent = `${m}:${s}`;
-    if(remaining <= 0){
-      clearInterval(OTP_TIMER_INT);
-      if(el) el.textContent = 'Expired';
-      showOtpErr('OTP expired. Please request a new one.');
-    }
-  }, 1000);
-}
-
 function showErr(msg){ $('lgErrMsg').textContent=msg; $('lgErr').style.display='flex'; setTimeout(()=>$('lgErr').style.display='none',5000); }
-function showOtpErr(msg){ $('otpErrMsg').textContent=msg; $('otpErr').style.display='flex'; setTimeout(()=>$('otpErr').style.display='none',5000); }
 
 function doLogout(){
-  SESSION=null; OTP_TEMP_USER=null;
-  clearInterval(OTP_TIMER_INT);
+  SESSION=null;
   try{localStorage.removeItem('JIS_sess');}catch(e){}
   try{sessionStorage.removeItem('JIS_sess');}catch(e){}
   $('app').style.display='none';
-  $('otpPage').style.display='none';
   $('loginPage').style.display='flex';
   $('lgPass').value='';
 }
 
 function bootApp(){
   $('loginPage').style.display='none';
-  $('otpPage').style.display='none';
   $('app').style.display='flex';
-  $('sbName').textContent = SESSION.name||SESSION.username;
-  $('sbRole').textContent = SESSION.role;
-  $('tbAvatar').textContent = (SESSION.name||SESSION.username).charAt(0).toUpperCase();
+  $('sbName').textContent=SESSION.name||SESSION.username;
+  $('sbRole').textContent=SESSION.role;
+  $('tbAvatar').textContent=(SESSION.name||SESSION.username).charAt(0).toUpperCase();
   if(SESSION.role!=='Admin'){ $('addUsrBtn').style.display='none'; $('usrAdminMsg').style.display='flex'; }
   try{localStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
   try{sessionStorage.setItem('JIS_sess',JSON.stringify(SESSION));}catch(e){}
