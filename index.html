@@ -615,7 +615,7 @@
 /* ──────────────────────────────────────────────────
    CONFIG  ← paste your Apps Script Web App URL here
 ────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtZTNAd2lsRalD4sQAt9ChwtNurV-xyxECmDKIxHJ51VcCi0f0_3lRIsOL-5XiKR0m5g/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwebWtDYEDaDmour_84WFuXIRuoFTayDzgSWMiplKnSYFBhRqDm6bDlCe50tHWMmNGF/exec';
 
 /* ── STATE ── */
 let SESSION   = null;
@@ -1111,176 +1111,22 @@ async function loadReports(){
   </table></div>`;
 }
 async function exportPDF(){
-  if(!PRODUCTS.length){
-    toast('⏳ Loading data…');
-    const r = await api('getProducts');
-    if(!r.success || !r.data?.length){ toast('⚠️ No products found. Go to Products section first.'); return; }
-    PRODUCTS = r.data;
-  }
-  generatePDF();
-}
+  toast('⏳ Generating report…');
+  const btn = document.querySelector('[onclick="exportPDF()"]');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating…'; }
 
-function generatePDF(){
-  toast('📄 Generating PDF…');
+  const r = await api('generatePDF');
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  if(btn){ btn.disabled=false; btn.innerHTML='<i class="fas fa-file-pdf"></i> Export PDF'; }
 
-  const now     = new Date();
-  const dateStr = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
-  const timeStr = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
-  const fname   = `Jollibee_Inventory_${now.toISOString().split('T')[0]}.pdf`;
-
-  // ── HEADER ──────────────────────────────────────
-  doc.setFillColor(204,0,0);
-  doc.rect(0,0,297,26,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica','bold');
-  doc.text('JOLLIBEE INVENTORY SYSTEM',148,11,{align:'center'});
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.text('Inventory Report',148,19,{align:'center'});
-
-  // ── DATE ────────────────────────────────────────
-  doc.setTextColor(80,80,80);
-  doc.setFontSize(9);
-  doc.text(`Generated: ${dateStr} at ${timeStr}`,14,32);
-
-  // ── SUMMARY BOXES ───────────────────────────────
-  const totalVal  = PRODUCTS.reduce((s,p)=>s+Number(p.stock||0)*Number(p.price||0),0);
-  const lowStock  = PRODUCTS.filter(p=>Number(p.stock)<=Number(p.threshold||10)).length;
-  const totalStk  = PRODUCTS.reduce((s,p)=>s+Number(p.stock||0),0);
-  const boxes=[
-    {label:'Total Products',  value:String(PRODUCTS.length),  r:204,g:0,b:0},
-    {label:'Low Stock Items', value:String(lowStock),          r:239,g:68,b:68},
-    {label:'Total Stock',     value:String(totalStk),          r:34,g:197,b:94},
-    {label:'Inventory Value', value:'P'+Number(totalVal).toLocaleString('en-PH',{minimumFractionDigits:2}), r:59,g:130,b:246}
-  ];
-  boxes.forEach((b,i)=>{
-    const x=14+(i*68);
-    doc.setFillColor(b.r,b.g,b.b);
-    doc.roundedRect(x,36,64,16,2,2,'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(7);
-    doc.setFont('helvetica','normal');
-    doc.text(b.label,x+32,42,{align:'center'});
-    doc.setFontSize(12);
-    doc.setFont('helvetica','bold');
-    doc.text(b.value,x+32,50,{align:'center'});
-  });
-
-  // ── TABLE ───────────────────────────────────────
-  doc.setTextColor(30,41,59);
-  doc.setFontSize(11);
-  doc.setFont('helvetica','bold');
-  doc.text('Inventory Summary',14,62);
-
-  // Strip emojis from product names
-  const stripEmoji = s => (s||'').replace(/[\u{1F300}-\u{1FFFF}]/gu,'').replace(/[^\x00-\x7F]/g,'').trim();
-
-  const tableData = PRODUCTS.map((p,i)=>{
-    const val   = Number(p.stock||0)*Number(p.price||0);
-    const isLow = Number(p.stock)<=Number(p.threshold||10);
-    return [
-      i+1,
-      stripEmoji(p.name),
-      p.category||'–',
-      'P'+Number(p.price||0).toLocaleString('en-PH',{minimumFractionDigits:2}),
-      (p.stock||0)+' '+(p.unit||'pcs'),
-      isLow?'Low Stock':'In Stock',
-      'P'+val.toLocaleString('en-PH',{minimumFractionDigits:2})
-    ];
-  });
-
-  doc.autoTable({
-    startY:66,
-    head:[['#','Product Name','Category','Price','Stock','Status','Stock Value']],
-    body:tableData,
-    theme:'striped',
-    styles:{ font:'helvetica', fontSize:9, cellPadding:3, overflow:'linebreak' },
-    headStyles:{ fillColor:[204,0,0], textColor:[255,255,255], fontStyle:'bold', fontSize:9 },
-    alternateRowStyles:{ fillColor:[255,245,245] },
-    columnStyles:{
-      0:{ cellWidth:10, halign:'center' },
-      1:{ cellWidth:65 },
-      2:{ cellWidth:40 },
-      3:{ cellWidth:28, halign:'right' },
-      4:{ cellWidth:28, halign:'center' },
-      5:{ cellWidth:26, halign:'center' },
-      6:{ cellWidth:36, halign:'right' }
-    },
-    didParseCell:function(data){
-      if(data.column.index===5&&data.section==='body'){
-        if(String(data.cell.raw).includes('Low')){
-          data.cell.styles.textColor=[204,0,0];
-          data.cell.styles.fontStyle='bold';
-        } else {
-          data.cell.styles.textColor=[34,197,94];
-        }
-      }
-    }
-  });
-
-  // ── TOTAL ────────────────────────────────────────
-  const fy=doc.lastAutoTable.finalY+5;
-  doc.setFontSize(10);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(30,41,59);
-  doc.text('Total Inventory Value: P'+totalVal.toLocaleString('en-PH',{minimumFractionDigits:2}),14,fy);
-
-  // ── FOOTER ───────────────────────────────────────
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
-    doc.setPage(i);
-    doc.setFillColor(204,0,0);
-    doc.rect(0,200,297,10,'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(7);
-    doc.text('Jollibee Inventory System — Confidential',14,206);
-    doc.text(`Page ${i} of ${pages}`,283,206,{align:'right'});
-  }
-
-  // ── SAVE ─────────────────────────────────────────
-  const isMobile=/android|iphone|ipad|ipod/i.test(navigator.userAgent);
-  if(isMobile){
-    try{
-      // Use data URI — most reliable on Android/MIUI
-      const dataUri = doc.output('datauristring');
-      const win = window.open(dataUri, '_blank');
-      if(win){
-        toast('📄 PDF opened! Tap ⋮ → Download');
-      } else {
-        // If popup blocked — show inline download link
-        const div = document.createElement('div');
-        div.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-        div.innerHTML = `
-          <div style="background:#fff;border-radius:16px;padding:24px;text-align:center;max-width:320px;width:100%;">
-            <div style="font-size:48px;margin-bottom:12px;">📄</div>
-            <div style="font-weight:700;font-size:16px;margin-bottom:8px;">PDF Ready!</div>
-            <div style="font-size:13px;color:#666;margin-bottom:20px;">Tap the button below to open and save your PDF report.</div>
-            <a href="${dataUri}" download="${fname}" 
-               style="display:block;background:#CC0000;color:#fff;padding:12px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;margin-bottom:10px;">
-              📥 Download PDF
-            </a>
-            <button onclick="this.parentElement.parentElement.remove()" 
-              style="background:#f1f5f9;border:none;padding:10px 20px;border-radius:10px;font-size:13px;cursor:pointer;width:100%;">
-              Close
-            </button>
-          </div>`;
-        document.body.appendChild(div);
-        toast('📄 PDF ready!');
-      }
-    } catch(e){
-      doc.output('dataurlnewwindow');
-      toast('📄 PDF opened in browser!');
-    }
+  if(r.success && r.url){
+    // Open Google Drive PDF link — works on ALL devices including Android
+    window.open(r.url, '_blank');
+    toast('📄 PDF ready! Opening Google Drive…');
   } else {
-    doc.save(fname);
-    toast('📥 PDF downloaded!');
+    toast('❌ Failed to generate PDF: ' + (r.error||'Unknown error'));
   }
 }
-
 /* ══════════════════════════════════════════════════
    USERS
 ══════════════════════════════════════════════════ */
